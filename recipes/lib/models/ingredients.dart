@@ -12,4 +12,16 @@ class Ingredient {
     required this.name,
     required this.quantity,
   }) : id = id ?? _uuid.v4();
+
+  Map<String, dynamic> toMap() => {
+        'id': id,
+        'name': name,
+        'quantity': quantity,
+      };
+
+  factory Ingredient.fromMap(Map<String, dynamic> map) => Ingredient(
+        id: map['id'],
+        name: map['name'],
+        quantity: map['quantity'],
+      );
 }
