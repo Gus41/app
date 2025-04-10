@@ -49,9 +49,8 @@ class RecipeNotifier extends StateNotifier<List<Recipe>> {
           List<String>.from(jsonDecode(row['ingredientIds'] as String));
       final stepIds = List<String>.from(jsonDecode(row['stepIds'] as String));
 
-      final ingredients = ingredientList
-          .where((i) => ingredientIds.contains(i.id))
-          .toList();
+      final ingredients =
+          ingredientList.where((i) => ingredientIds.contains(i.id)).toList();
       final steps = stepList.where((s) => stepIds.contains(s.id)).toList();
 
       return Recipe(
@@ -84,6 +83,7 @@ class RecipeNotifier extends StateNotifier<List<Recipe>> {
       },
       conflictAlgorithm: sql.ConflictAlgorithm.replace,
     );
+    //TODO: use provider to add of db igredients and steps
 
     state = [...state, item];
   }
@@ -98,6 +98,33 @@ class RecipeNotifier extends StateNotifier<List<Recipe>> {
       where: 'id = ?',
       whereArgs: [id],
     );
+    //TODO: use provider to remove of db igredients and steps IF WAS UPDATED
+  }
+
+  Future<void> updateItem(Recipe updatedRecipe) async {
+    final db = await _getDb();
+
+    await db.update(
+      'recipes',
+      {
+        'name': updatedRecipe.name,
+        'rating': updatedRecipe.rating,
+        'dateAdded': updatedRecipe.dateAdded.toIso8601String(),
+        'preparationTime': updatedRecipe.preparationTime.inMinutes,
+        'ingredientIds':
+            jsonEncode(updatedRecipe.ingredients.map((i) => i.id).toList()),
+        'stepIds': jsonEncode(updatedRecipe.steps.map((s) => s.id).toList()),
+      },
+      where: 'id = ?',
+      whereArgs: [updatedRecipe.id],
+    );
+
+      //TODO: use provider to update db of igredients and steps IF WAS UPDATED
+
+    state = [
+      for (final recipe in state)
+        if (recipe.id == updatedRecipe.id) updatedRecipe else recipe,
+    ];
   }
 }
 
