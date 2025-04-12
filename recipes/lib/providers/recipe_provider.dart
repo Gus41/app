@@ -8,6 +8,7 @@ import 'package:sqflite/sqflite.dart' as sql;
 import 'package:recipes/providers/igredients_provider.dart';
 import 'package:recipes/providers/step_preparation_provider.dart';
 
+//Recipe notifier will be the only providers used by screens and forms
 class RecipeNotifier extends StateNotifier<List<Recipe>> {
   final Ref ref;
 
@@ -83,7 +84,15 @@ class RecipeNotifier extends StateNotifier<List<Recipe>> {
       },
       conflictAlgorithm: sql.ConflictAlgorithm.replace,
     );
-    //TODO: use provider to add of db igredients and steps
+
+    //addging igredients and steps to db
+    for (final ingredient in item.ingredients) {
+      await ref.read(ingredientProvider.notifier).addItem(ingredient);
+    }
+
+    for (final step in item.steps) {
+      await ref.read(stepPreparationProvider.notifier).addItem(step);
+    }
 
     state = [...state, item];
   }
@@ -91,6 +100,7 @@ class RecipeNotifier extends StateNotifier<List<Recipe>> {
   Future<void> removeItem(String id) async {
     final db = await _getDb();
 
+    final recipeToRemove = state.firstWhere((r) => r.id == id);
     state = state.where((r) => r.id != id).toList();
 
     await db.delete(
@@ -98,7 +108,14 @@ class RecipeNotifier extends StateNotifier<List<Recipe>> {
       where: 'id = ?',
       whereArgs: [id],
     );
-    //TODO: use provider to remove of db igredients and steps IF WAS UPDATED
+
+    for (final ingredient in recipeToRemove.ingredients) {
+      await ref.read(ingredientProvider.notifier).removeItem(ingredient.id);
+    }
+
+    for (final step in recipeToRemove.steps) {
+      await ref.read(stepPreparationProvider.notifier).removeItem(step.id);
+    }
   }
 
   Future<void> updateItem(Recipe updatedRecipe) async {
@@ -119,7 +136,13 @@ class RecipeNotifier extends StateNotifier<List<Recipe>> {
       whereArgs: [updatedRecipe.id],
     );
 
-      //TODO: use provider to update db of igredients and steps IF WAS UPDATED
+    for (final ingredient in updatedRecipe.ingredients) {
+      await ref.read(ingredientProvider.notifier).updateItem(ingredient);
+    }
+
+    for (final step in updatedRecipe.steps) {
+      await ref.read(stepPreparationProvider.notifier).updateItem(step);
+    }
 
     state = [
       for (final recipe in state)
