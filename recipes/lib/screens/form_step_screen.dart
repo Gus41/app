@@ -29,12 +29,16 @@ class _FormStepScreenState extends State<FormStepScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
         title: const Text('Adicionar Etapa'),
+        backgroundColor: Colors.red,
+        foregroundColor: Colors.white,
         actions: [
           IconButton(
             onPressed: _submitForm,
             icon: const Icon(Icons.save),
+            tooltip: 'Salvar',
           ),
         ],
       ),
@@ -45,7 +49,17 @@ class _FormStepScreenState extends State<FormStepScreen> {
           child: Column(
             children: [
               TextFormField(
-                decoration: const InputDecoration(labelText: 'Ordem'),
+                decoration: InputDecoration(
+                  labelText: 'Ordem',
+                  labelStyle: const TextStyle(color: Colors.red),
+                  focusedBorder: OutlineInputBorder(
+                    borderSide: const BorderSide(color: Colors.red),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
                 keyboardType: TextInputType.number,
                 initialValue: '1',
                 validator: (value) {
@@ -56,8 +70,19 @@ class _FormStepScreenState extends State<FormStepScreen> {
                 },
                 onSaved: (value) => _order = int.parse(value!),
               ),
+              const SizedBox(height: 16),
               TextFormField(
-                decoration: const InputDecoration(labelText: 'Instrução'),
+                decoration: InputDecoration(
+                  labelText: 'Instrução',
+                  labelStyle: const TextStyle(color: Colors.red),
+                  focusedBorder: OutlineInputBorder(
+                    borderSide: const BorderSide(color: Colors.red),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
                 maxLines: 3,
                 validator: (value) {
                   if (value == null || value.trim().isEmpty) {

@@ -28,12 +28,16 @@ class _FormIngredientScreenState extends State<FormIngredientScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
         title: const Text('Adicionar Ingrediente'),
+        backgroundColor: Colors.red,
+        foregroundColor: Colors.white,
         actions: [
           IconButton(
             onPressed: _submitForm,
             icon: const Icon(Icons.save),
+            tooltip: 'Salvar',
           ),
         ],
       ),
@@ -44,7 +48,17 @@ class _FormIngredientScreenState extends State<FormIngredientScreen> {
           child: Column(
             children: [
               TextFormField(
-                decoration: const InputDecoration(labelText: 'Nome'),
+                decoration: InputDecoration(
+                  labelText: 'Nome',
+                  labelStyle: const TextStyle(color: Colors.red),
+                  focusedBorder: OutlineInputBorder(
+                    borderSide: const BorderSide(color: Colors.red),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
                 validator: (value) {
                   if (value == null || value.trim().isEmpty) {
                     return 'Informe o nome do ingrediente.';
@@ -53,8 +67,19 @@ class _FormIngredientScreenState extends State<FormIngredientScreen> {
                 },
                 onSaved: (value) => _name = value!,
               ),
+              const SizedBox(height: 16),
               TextFormField(
-                decoration: const InputDecoration(labelText: 'Quantidade'),
+                decoration: InputDecoration(
+                  labelText: 'Quantidade',
+                  labelStyle: const TextStyle(color: Colors.red),
+                  focusedBorder: OutlineInputBorder(
+                    borderSide: const BorderSide(color: Colors.red),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
                 validator: (value) {
                   if (value == null || value.trim().isEmpty) {
                     return 'Informe a quantidade.';

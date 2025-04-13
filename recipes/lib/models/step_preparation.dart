@@ -12,4 +12,16 @@ class StepPreparation {
     required this.order,
     required this.instruction,
   }) : id = id ?? _uuid.v4();
+
+  Map<String, dynamic> toMap() => {
+        'id': id,
+        'order': order,
+        'instruction': instruction,
+      };
+
+  factory StepPreparation.fromMap(Map<String, dynamic> map) => StepPreparation(
+        id: map['id'],
+        order: map['order'],
+        instruction: map['instruction'],
+      );
 }
