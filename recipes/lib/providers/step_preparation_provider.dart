@@ -3,10 +3,9 @@ import 'package:sqflite/sqflite.dart' as sql;
 import 'package:path/path.dart';
 import 'package:recipes/models/step_preparation.dart';
 
-
 class StepPreparationNotifier extends StateNotifier<List<StepPreparation>> {
   StepPreparationNotifier() : super([]) {
-    _loadItems();
+    loadItems();
   }
 
   Future<sql.Database> _getDb() async {
@@ -26,12 +25,13 @@ class StepPreparationNotifier extends StateNotifier<List<StepPreparation>> {
     );
   }
 
-  Future<void> _loadItems() async {
+  Future<void> loadItems() async {
     final db = await _getDb();
     final data = await db.query('steps');
 
     final items = data.map((row) => StepPreparation.fromMap(row)).toList();
-
+    print("Itens recuperados");
+    print(items);
     state = items;
   }
 
@@ -75,8 +75,8 @@ class StepPreparationNotifier extends StateNotifier<List<StepPreparation>> {
     ];
   }
 }
+
 final stepPreparationProvider =
     StateNotifierProvider<StepPreparationNotifier, List<StepPreparation>>(
   (ref) => StepPreparationNotifier(),
 );
-

@@ -41,7 +41,11 @@ class RecipeNotifier extends StateNotifier<List<Recipe>> {
     final db = await _getDb();
     final data = await db.query('recipes');
 
-    //reading data of providers
+    await ref.read(ingredientProvider.notifier).loadItems();
+    await ref.read(stepPreparationProvider.notifier).loadItems();
+
+
+    
     final ingredientList = ref.read(ingredientProvider);
     final stepList = ref.read(stepPreparationProvider);
 
@@ -49,7 +53,8 @@ class RecipeNotifier extends StateNotifier<List<Recipe>> {
       final ingredientIds =
           List<String>.from(jsonDecode(row['ingredientIds'] as String));
       final stepIds = List<String>.from(jsonDecode(row['stepIds'] as String));
-
+      print(ingredientIds);
+      print(stepIds);
       final ingredients =
           ingredientList.where((i) => ingredientIds.contains(i.id)).toList();
       final steps = stepList.where((s) => stepIds.contains(s.id)).toList();

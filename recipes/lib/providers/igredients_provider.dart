@@ -5,7 +5,7 @@ import 'package:recipes/models/ingredients.dart';
 
 class IngredientNotifier extends StateNotifier<List<Ingredient>> {
   IngredientNotifier() : super([]) {
-    _loadItems();
+    loadItems();
   }
 
   Future<sql.Database> _getDb() async {
@@ -25,7 +25,7 @@ class IngredientNotifier extends StateNotifier<List<Ingredient>> {
     );
   }
 
-  Future<void> _loadItems() async {
+  Future<void> loadItems() async {
     final db = await _getDb();
     final data = await db.query('ingredients');
 
@@ -36,7 +36,8 @@ class IngredientNotifier extends StateNotifier<List<Ingredient>> {
         quantity: row['quantity'] as String,
       );
     }).toList();
-
+    print("Itens recuperados");
+    print(items);
     state = items;
   }
 
@@ -52,7 +53,8 @@ class IngredientNotifier extends StateNotifier<List<Ingredient>> {
       },
       conflictAlgorithm: sql.ConflictAlgorithm.replace,
     );
-
+    print(item);
+    print("Adicionado no bd");
     state = [...state, item];
   }
 

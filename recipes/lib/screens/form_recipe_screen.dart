@@ -103,6 +103,10 @@ class _FormRecipeScreenState extends ConsumerState<FormRecipeScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(isEditing ? 'Editar Receita' : 'Nova Receita'),
+        backgroundColor: Colors.white,
+        foregroundColor: Colors.red,
+        elevation: 0.5,
+        centerTitle: true,
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
@@ -112,7 +116,13 @@ class _FormRecipeScreenState extends ConsumerState<FormRecipeScreen> {
             children: [
               TextFormField(
                 controller: _nameController,
-                decoration: const InputDecoration(labelText: 'Nome da Receita'),
+                decoration: const InputDecoration(
+                  labelText: 'Nome da Receita',
+                  labelStyle: TextStyle(color: Colors.red),
+                  focusedBorder: UnderlineInputBorder(
+                    borderSide: BorderSide(color: Colors.red),
+                  ),
+                ),
                 onSaved: (value) => _name = value!.trim(),
                 validator: (value) => (value == null || value.isEmpty)
                     ? 'Informe um nome.'
@@ -120,7 +130,13 @@ class _FormRecipeScreenState extends ConsumerState<FormRecipeScreen> {
               ),
               TextFormField(
                 controller: _ratingController,
-                decoration: const InputDecoration(labelText: 'Avaliação (0-5)'),
+                decoration: const InputDecoration(
+                  labelText: 'Avaliação (0-5)',
+                  labelStyle: TextStyle(color: Colors.red),
+                  focusedBorder: UnderlineInputBorder(
+                    borderSide: BorderSide(color: Colors.red),
+                  ),
+                ),
                 keyboardType:
                     const TextInputType.numberWithOptions(decimal: true),
                 onSaved: (value) =>
@@ -135,8 +151,13 @@ class _FormRecipeScreenState extends ConsumerState<FormRecipeScreen> {
               ),
               TextFormField(
                 controller: _timeController,
-                decoration:
-                    const InputDecoration(labelText: 'Tempo de Preparo (min)'),
+                decoration: const InputDecoration(
+                  labelText: 'Tempo de Preparo (min)',
+                  labelStyle: TextStyle(color: Colors.red),
+                  focusedBorder: UnderlineInputBorder(
+                    borderSide: BorderSide(color: Colors.red),
+                  ),
+                ),
                 keyboardType: TextInputType.number,
                 onSaved: (value) => _preparationTime =
                     Duration(minutes: int.tryParse(value ?? '0') ?? 0),
@@ -151,8 +172,12 @@ class _FormRecipeScreenState extends ConsumerState<FormRecipeScreen> {
               const SizedBox(height: 20),
               ElevatedButton.icon(
                 onPressed: _addIngredient,
-                icon: const Icon(Icons.add),
+                icon: const Icon(Icons.add, color: Colors.white),
                 label: const Text('Adicionar Ingrediente'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.red,
+                  foregroundColor: Colors.white,
+                ),
               ),
               ..._ingredients.map((i) => ListTile(
                     title: Text(i.name),
@@ -161,8 +186,12 @@ class _FormRecipeScreenState extends ConsumerState<FormRecipeScreen> {
               const SizedBox(height: 20),
               ElevatedButton.icon(
                 onPressed: _addStep,
-                icon: const Icon(Icons.add),
+                icon: const Icon(Icons.add, color: Colors.white),
                 label: const Text('Adicionar Etapa'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.red,
+                  foregroundColor: Colors.white,
+                ),
               ),
               ..._steps.map((s) => ListTile(
                     leading: Text('${s.order}º'),
@@ -171,11 +200,13 @@ class _FormRecipeScreenState extends ConsumerState<FormRecipeScreen> {
               const SizedBox(height: 30),
               ElevatedButton.icon(
                 onPressed: _saveForm,
-                icon: const Icon(Icons.save),
+                icon: const Icon(Icons.save, color: Colors.white,),
                 label: Text(isEditing ? 'Salvar Alterações' : 'Salvar Receita'),
                 style: ElevatedButton.styleFrom(
                   minimumSize: const Size.fromHeight(50),
                   textStyle: const TextStyle(fontSize: 18),
+                  backgroundColor: Colors.red,
+                  foregroundColor: Colors.white,
                 ),
               ),
             ],
