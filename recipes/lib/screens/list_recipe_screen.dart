@@ -71,7 +71,7 @@ class ListRecipeScreen extends ConsumerWidget {
                     onTap: () {
                       Navigator.of(context).pushNamed(
                         AppRoutes.viewRecipe,
-                        arguments: recipe,
+                        arguments: recipe.id,
                       );
                     },
                   ),
