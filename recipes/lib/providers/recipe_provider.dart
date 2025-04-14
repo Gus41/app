@@ -142,12 +142,13 @@ class RecipeNotifier extends StateNotifier<List<Recipe>> {
     );
 
     for (final ingredient in updatedRecipe.ingredients) {
-      await ref.read(ingredientProvider.notifier).updateItem(ingredient);
+      await ref.read(ingredientProvider.notifier).upsertItem(ingredient);
     }
 
     for (final step in updatedRecipe.steps) {
-      await ref.read(stepPreparationProvider.notifier).updateItem(step);
+      await ref.read(stepPreparationProvider.notifier).upsertItem(step);
     }
+
 
     state = [
       for (final recipe in state)
