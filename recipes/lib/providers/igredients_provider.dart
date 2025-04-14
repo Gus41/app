@@ -88,6 +88,22 @@ class IngredientNotifier extends StateNotifier<List<Ingredient>> {
         if (item.id == updated.id) updated else item,
     ];
   }
+  Future<void> upsertItem(Ingredient item) async {
+    final db = await _getDb();
+
+    final existing = await db.query(
+      'ingredients',
+      where: 'id = ?',
+      whereArgs: [item.id],
+    );
+
+    if (existing.isEmpty) {
+      await addItem(item);
+    } else {
+      await updateItem(item);
+    }
+  }
+
 }
 final ingredientProvider = StateNotifierProvider<IngredientNotifier, List<Ingredient>>(
   (ref) => IngredientNotifier(),

@@ -74,6 +74,22 @@ class StepPreparationNotifier extends StateNotifier<List<StepPreparation>> {
         if (step.id == updatedStep.id) updatedStep else step
     ];
   }
+  Future<void> upsertItem(StepPreparation item) async {
+    final db = await _getDb();
+
+    final existing = await db.query(
+      'steps',
+      where: 'id = ?',
+      whereArgs: [item.id],
+    );
+
+    if (existing.isEmpty) {
+      await addItem(item);
+    } else {
+      await updateItem(item);
+    }
+  }
+
 }
 
 final stepPreparationProvider =
