@@ -92,7 +92,17 @@ class _FormRecipeScreenState extends ConsumerState<FormRecipeScreen> {
     );
 
     if (result != null) {
-      setState(() => _steps.add(result));
+      if (_steps.any((step) => step.order == result.order)) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Já existe um passo com essa ordem!')),
+        );
+        return;
+      }
+
+      setState(() {
+        _steps.add(result);
+        _steps.sort((a, b) => a.order.compareTo(b.order));
+      });
     }
   }
 
@@ -138,9 +148,9 @@ class _FormRecipeScreenState extends ConsumerState<FormRecipeScreen> {
                   ),
                 ),
                 keyboardType:
-                    const TextInputType.numberWithOptions(decimal: true),
+                const TextInputType.numberWithOptions(decimal: true),
                 onSaved: (value) =>
-                    _rating = double.tryParse(value ?? '0') ?? 0,
+                _rating = double.tryParse(value ?? '0') ?? 0,
                 validator: (value) {
                   final rating = double.tryParse(value ?? '');
                   if (rating == null || rating < 0 || rating > 5) {
@@ -179,10 +189,28 @@ class _FormRecipeScreenState extends ConsumerState<FormRecipeScreen> {
                   foregroundColor: Colors.white,
                 ),
               ),
-              ..._ingredients.map((i) => ListTile(
-                    title: Text(i.name),
-                    subtitle: Text(i.quantity),
-                  )),
+              ..._ingredients.asMap().entries.map((entry) {
+                final index = entry.key;
+                final ingredient = entry.value;
+                return ListTile(
+                  title: Text(ingredient.name),
+                  subtitle: Text(ingredient.quantity),
+                  trailing: const Icon(Icons.edit, color: Colors.red),
+                  onTap: () async {
+                    final result = await Navigator.of(context).push<Ingredient>(
+                      MaterialPageRoute(
+                        builder: (_) => FormIngredientScreen(ingredient: ingredient),
+                      ),
+                    );
+
+                    if (result != null) {
+                      setState(() {
+                        _ingredients[index] = result;
+                      });
+                    }
+                  },
+                );
+              }).toList(),
               const SizedBox(height: 20),
               ElevatedButton.icon(
                 onPressed: _addStep,
@@ -193,14 +221,32 @@ class _FormRecipeScreenState extends ConsumerState<FormRecipeScreen> {
                   foregroundColor: Colors.white,
                 ),
               ),
-              ..._steps.map((s) => ListTile(
-                    leading: Text('${s.order}º'),
-                    title: Text(s.instruction),
-                  )),
+              ..._steps.map((s) {
+                return ListTile(
+                  leading: Text('${s.order}º'),
+                  title: Text(s.instruction),
+                  trailing: const Icon(Icons.edit, color: Colors.red),
+                  onTap: () async {
+                    final result = await Navigator.of(context).push<StepPreparation>(
+                      MaterialPageRoute(
+                        builder: (_) => FormStepScreen(step: s),
+                      ),
+                    );
+
+                    if (result != null) {
+                      setState(() {
+                        final index = _steps.indexOf(s);
+                        _steps[index] = result;
+                        _steps.sort((a, b) => a.order.compareTo(b.order));
+                      });
+                    }
+                  },
+                );
+              }).toList(),
               const SizedBox(height: 30),
               ElevatedButton.icon(
                 onPressed: _saveForm,
-                icon: const Icon(Icons.save, color: Colors.white,),
+                icon: const Icon(Icons.save, color: Colors.white),
                 label: Text(isEditing ? 'Salvar Alterações' : 'Salvar Receita'),
                 style: ElevatedButton.styleFrom(
                   minimumSize: const Size.fromHeight(50),

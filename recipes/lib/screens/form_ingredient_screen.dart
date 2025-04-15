@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:recipes/models/ingredients.dart';
 
 class FormIngredientScreen extends StatefulWidget {
-  const FormIngredientScreen({super.key});
+  const FormIngredientScreen({super.key, this.ingredient});
+
+  final Ingredient? ingredient;
 
   @override
   State<FormIngredientScreen> createState() => _FormIngredientScreenState();
@@ -22,6 +24,15 @@ class _FormIngredientScreenState extends State<FormIngredientScreen> {
         quantity: _quantity,
       );
       Navigator.of(context).pop(newIngredient);
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.ingredient != null) {
+      _name = widget.ingredient!.name;
+      _quantity = widget.ingredient!.quantity;
     }
   }
 
@@ -48,6 +59,7 @@ class _FormIngredientScreenState extends State<FormIngredientScreen> {
           child: Column(
             children: [
               TextFormField(
+                initialValue: _name,
                 decoration: InputDecoration(
                   labelText: 'Nome',
                   labelStyle: const TextStyle(color: Colors.red),
@@ -69,6 +81,7 @@ class _FormIngredientScreenState extends State<FormIngredientScreen> {
               ),
               const SizedBox(height: 16),
               TextFormField(
+                initialValue: _quantity,
                 decoration: InputDecoration(
                   labelText: 'Quantidade',
                   labelStyle: const TextStyle(color: Colors.red),

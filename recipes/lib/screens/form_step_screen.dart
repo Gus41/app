@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:recipes/models/step_preparation.dart';
 
 class FormStepScreen extends StatefulWidget {
-  const FormStepScreen({super.key});
+  final StepPreparation? step;
+
+  const FormStepScreen({super.key, this.step});
 
   @override
   State<FormStepScreen> createState() => _FormStepScreenState();
@@ -12,6 +14,15 @@ class _FormStepScreenState extends State<FormStepScreen> {
   final _formKey = GlobalKey<FormState>();
   int _order = 1;
   String _instruction = '';
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.step != null) {
+      _order = widget.step!.order;
+      _instruction = widget.step!.instruction;
+    }
+  }
 
   void _submitForm() {
     if (_formKey.currentState!.validate()) {
@@ -31,14 +42,13 @@ class _FormStepScreenState extends State<FormStepScreen> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        title: const Text('Adicionar Etapa'),
+        title: Text(widget.step == null ? 'Adicionar Etapa' : 'Editar Etapa'),
         backgroundColor: Colors.red,
         foregroundColor: Colors.white,
         actions: [
           IconButton(
             onPressed: _submitForm,
-            icon: const Icon(Icons.save),
-            tooltip: 'Salvar',
+            icon: const Icon(Icons.save)
           ),
         ],
       ),
@@ -61,7 +71,7 @@ class _FormStepScreenState extends State<FormStepScreen> {
                   ),
                 ),
                 keyboardType: TextInputType.number,
-                initialValue: '1',
+                initialValue: _order.toString(),
                 validator: (value) {
                   if (value == null || int.tryParse(value) == null || int.parse(value) < 1) {
                     return 'Informe um número válido.';
@@ -84,6 +94,7 @@ class _FormStepScreenState extends State<FormStepScreen> {
                   ),
                 ),
                 maxLines: 3,
+                initialValue: _instruction,
                 validator: (value) {
                   if (value == null || value.trim().isEmpty) {
                     return 'Informe a instrução de preparo.';
