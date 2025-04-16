@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:recipes/models/recipe.dart';
 import 'package:path/path.dart';
+import 'package:recipes/models/step_preparation.dart';
 import 'package:sqflite/sqflite.dart' as sql;
 
 //providers
@@ -44,8 +45,6 @@ class RecipeNotifier extends StateNotifier<List<Recipe>> {
     await ref.read(ingredientProvider.notifier).loadItems();
     await ref.read(stepPreparationProvider.notifier).loadItems();
 
-
-    
     final ingredientList = ref.read(ingredientProvider);
     final stepList = ref.read(stepPreparationProvider);
 
@@ -76,6 +75,9 @@ class RecipeNotifier extends StateNotifier<List<Recipe>> {
   Future<void> addItem(Recipe item) async {
     final db = await _getDb();
 
+    final sortedSteps = List<StepPreparation>.from(item.steps)
+      ..sort((a, b) => a.order.compareTo(b.order));
+
     await db.insert(
       'recipes',
       {
@@ -85,21 +87,22 @@ class RecipeNotifier extends StateNotifier<List<Recipe>> {
         'dateAdded': item.dateAdded.toIso8601String(),
         'preparationTime': item.preparationTime.inMinutes,
         'ingredientIds': jsonEncode(item.ingredients.map((e) => e.id).toList()),
-        'stepIds': jsonEncode(item.steps.map((e) => e.id).toList()),
+        'stepIds': jsonEncode(sortedSteps.map((e) => e.id).toList()),
       },
       conflictAlgorithm: sql.ConflictAlgorithm.replace,
     );
 
-    //addging igredients and steps to db
+    // Adicionando ingredientes e steps
     for (final ingredient in item.ingredients) {
       await ref.read(ingredientProvider.notifier).addItem(ingredient);
     }
 
-    for (final step in item.steps) {
+    for (final step in sortedSteps) {
       await ref.read(stepPreparationProvider.notifier).addItem(step);
     }
 
-    state = [...state, item];
+    // Armazenando a receita com steps ordenados
+    state = [...state, item.copyWith(steps: sortedSteps)];
   }
 
   Future<void> removeItem(String id) async {
@@ -126,6 +129,10 @@ class RecipeNotifier extends StateNotifier<List<Recipe>> {
   Future<void> updateItem(Recipe updatedRecipe) async {
     final db = await _getDb();
 
+    // Ordena os steps antes de salvar
+    final sortedSteps = List<StepPreparation>.from(updatedRecipe.steps)
+      ..sort((a, b) => a.order.compareTo(b.order));
+
     await db.update(
       'recipes',
       {
@@ -135,7 +142,7 @@ class RecipeNotifier extends StateNotifier<List<Recipe>> {
         'preparationTime': updatedRecipe.preparationTime.inMinutes,
         'ingredientIds':
             jsonEncode(updatedRecipe.ingredients.map((i) => i.id).toList()),
-        'stepIds': jsonEncode(updatedRecipe.steps.map((s) => s.id).toList()),
+        'stepIds': jsonEncode(sortedSteps.map((s) => s.id).toList()),
       },
       where: 'id = ?',
       whereArgs: [updatedRecipe.id],
@@ -145,14 +152,15 @@ class RecipeNotifier extends StateNotifier<List<Recipe>> {
       await ref.read(ingredientProvider.notifier).upsertItem(ingredient);
     }
 
-    for (final step in updatedRecipe.steps) {
+    for (final step in sortedSteps) {
       await ref.read(stepPreparationProvider.notifier).upsertItem(step);
     }
 
+    final updatedWithSortedSteps = updatedRecipe.copyWith(steps: sortedSteps);
 
     state = [
       for (final recipe in state)
-        if (recipe.id == updatedRecipe.id) updatedRecipe else recipe,
+        if (recipe.id == updatedRecipe.id) updatedWithSortedSteps else recipe,
     ];
   }
 }

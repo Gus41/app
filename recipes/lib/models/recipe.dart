@@ -25,4 +25,24 @@ class Recipe {
 
   int get ingredientCount => ingredients.length;
   int get stepCount => steps.length;
+
+   Recipe copyWith({
+    String? id,
+    String? name,
+    double? rating,
+    DateTime? dateAdded,
+    Duration? preparationTime,
+    List<Ingredient>? ingredients,
+    List<StepPreparation>? steps,
+  }) {
+    return Recipe(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      rating: rating ?? this.rating,
+      dateAdded: dateAdded ?? this.dateAdded,
+      preparationTime: preparationTime ?? this.preparationTime,
+      ingredients: ingredients ?? this.ingredients,
+      steps: steps ?? this.steps,
+    );
+  }
 }

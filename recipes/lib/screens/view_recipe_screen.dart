@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:recipes/models/step_preparation.dart';
 import 'package:recipes/screens/form_recipe_screen.dart';
 import 'package:recipes/providers/recipe_provider.dart';
 
@@ -7,12 +8,13 @@ class ViewRecipeScreen extends ConsumerWidget {
   const ViewRecipeScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref){
+  Widget build(BuildContext context, WidgetRef ref) {
     final recipeId = ModalRoute.of(context)!.settings.arguments as String;
     final recipes = ref.watch(recipeProvider);
     final recipe = recipes.firstWhere((r) => r.id == recipeId);
 
-
+    final sortedSteps = List<StepPreparation>.from(recipe.steps)
+      ..sort((a, b) => a.order.compareTo(b.order));
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -51,7 +53,6 @@ class ViewRecipeScreen extends ConsumerWidget {
               ],
             ),
             const SizedBox(height: 24),
-
             Text(
               'Ingredientes',
               style: Theme.of(context).textTheme.titleLarge?.copyWith(
@@ -60,7 +61,6 @@ class ViewRecipeScreen extends ConsumerWidget {
                   ),
             ),
             const SizedBox(height: 12),
-
             ...recipe.ingredients.map(
               (ing) => Card(
                 color: Colors.white,
@@ -71,13 +71,13 @@ class ViewRecipeScreen extends ConsumerWidget {
                 ),
                 margin: const EdgeInsets.symmetric(vertical: 6),
                 child: ListTile(
-                  leading: const Icon(Icons.kitchen_outlined, color: Colors.redAccent),
+                  leading: const Icon(Icons.kitchen_outlined,
+                      color: Colors.redAccent),
                   title: Text(ing.name),
                   subtitle: Text(ing.quantity),
                 ),
               ),
             ),
-
             const SizedBox(height: 24),
             Text(
               'Modo de Preparo',
@@ -87,27 +87,26 @@ class ViewRecipeScreen extends ConsumerWidget {
                   ),
             ),
             const SizedBox(height: 12),
-
-            ...recipe.steps.map(
-              (step) => Card(
-                color: Colors.white,
-                elevation: 2,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  side: BorderSide(color: Colors.redAccent.shade100, width: 1),
-                ),
-                margin: const EdgeInsets.symmetric(vertical: 6),
-                child: ListTile(
-                  leading: CircleAvatar(
-                    backgroundColor: Colors.redAccent,
-                    foregroundColor: Colors.white,
-                    child: Text(step.order.toString()),
+            ...sortedSteps.map(
+                  (step) => Card(
+                    color: Colors.white,
+                    elevation: 2,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      side: BorderSide(
+                          color: Colors.redAccent.shade100, width: 1),
+                    ),
+                    margin: const EdgeInsets.symmetric(vertical: 6),
+                    child: ListTile(
+                      leading: CircleAvatar(
+                        backgroundColor: Colors.redAccent,
+                        foregroundColor: Colors.white,
+                        child: Text(step.order.toString()),
+                      ),
+                      title: Text(step.instruction),
+                    ),
                   ),
-                  title: Text(step.instruction),
                 ),
-              ),
-            ),
-
             const SizedBox(height: 32),
             SizedBox(
               width: double.infinity,
