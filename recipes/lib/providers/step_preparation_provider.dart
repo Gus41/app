@@ -47,18 +47,6 @@ class StepPreparationNotifier extends StateNotifier<List<StepPreparation>> {
     state = [...state, item];
   }
 
-  Future<void> removeItem(String id) async {
-    final db = await _getDb();
-
-    await db.delete(
-      'steps',
-      where: 'id = ?',
-      whereArgs: [id],
-    );
-
-    state = state.where((step) => step.id != id).toList();
-  }
-
   Future<void> updateItem(StepPreparation updatedStep) async {
     final db = await _getDb();
 
@@ -89,7 +77,6 @@ class StepPreparationNotifier extends StateNotifier<List<StepPreparation>> {
       await updateItem(item);
     }
   }
-
 }
 
 final stepPreparationProvider =

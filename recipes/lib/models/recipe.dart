@@ -24,7 +24,6 @@ class Recipe {
   }) : id = id ?? _uuid.v4();
 
   int get ingredientCount => ingredients.length;
-  int get stepCount => steps.length;
 
    Recipe copyWith({
     String? id,
