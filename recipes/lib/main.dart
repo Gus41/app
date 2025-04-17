@@ -18,9 +18,6 @@ class App extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        primaryColor: Colors.deepPurple,
-      ),
       initialRoute: AppRoutes.listRecipes,
       routes: {
         AppRoutes.listRecipes: (ctx) => const ListRecipeScreen(),

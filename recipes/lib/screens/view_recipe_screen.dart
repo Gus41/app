@@ -15,120 +15,96 @@ class ViewRecipeScreen extends ConsumerWidget {
 
     final sortedSteps = List<StepPreparation>.from(recipe.steps)
       ..sort((a, b) => a.order.compareTo(b.order));
+
     return Scaffold(
-      backgroundColor: Colors.white,
       appBar: AppBar(
         backgroundColor: Colors.redAccent,
         foregroundColor: Colors.white,
         title: Text(recipe.name),
         centerTitle: true,
+        actions: [
+          IconButton(
+            icon: Icon(Icons.delete),
+            onPressed: () async {
+              await ref.read(recipeProvider.notifier).deleteItem(recipe.id);
+              Navigator.of(context).pop();
+            },
+          ),
+        ],
       ),
       body: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.all(16),
         child: ListView(
           children: [
+            Container(height: 8),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Chip(
-                  label: Text(
-                    '⭐ ${recipe.rating.toStringAsFixed(1)}',
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
+                Text(
+                  'Avaliação: ${recipe.rating.toString()}/5',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: Colors.red[400],
                   ),
-                  backgroundColor: Colors.redAccent,
                 ),
-                Chip(
-                  label: Text(
-                    '${recipe.preparationTime.inMinutes} min',
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      color: Colors.redAccent,
-                    ),
+                Text(
+                  'Tempo de Preparo: ${recipe.preparationTime.inMinutes} min',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: Colors.red[400],
                   ),
-                  backgroundColor: Colors.red.shade50,
                 ),
               ],
             ),
-            const SizedBox(height: 24),
+            Container(height: 12),
             Text(
               'Ingredientes',
               style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    color: Colors.redAccent,
-                    fontWeight: FontWeight.bold,
-                  ),
-            ),
-            const SizedBox(height: 12),
-            ...recipe.ingredients.map(
-              (ing) => Card(
-                color: Colors.white,
-                elevation: 2,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  side: BorderSide(color: Colors.redAccent.shade100, width: 1),
-                ),
-                margin: const EdgeInsets.symmetric(vertical: 6),
-                child: ListTile(
-                  leading: const Icon(Icons.kitchen_outlined,
-                      color: Colors.redAccent),
-                  title: Text(ing.name),
-                  subtitle: Text(ing.quantity),
-                ),
+                color: Colors.redAccent,
+                fontWeight: FontWeight.bold,
               ),
             ),
-            const SizedBox(height: 24),
+            ...recipe.ingredients.map(
+                  (ing) => ListTile(
+                contentPadding: EdgeInsets.all(4),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                title: Text(ing.name),
+                subtitle: Text('Quantidade: ${ing.quantity}'),
+              ),
+            ),
+            Container(height: 4),
             Text(
               'Modo de Preparo',
               style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    color: Colors.redAccent,
-                    fontWeight: FontWeight.bold,
-                  ),
-            ),
-            const SizedBox(height: 12),
-            ...sortedSteps.map(
-                  (step) => Card(
-                    color: Colors.white,
-                    elevation: 2,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      side: BorderSide(
-                          color: Colors.redAccent.shade100, width: 1),
-                    ),
-                    margin: const EdgeInsets.symmetric(vertical: 6),
-                    child: ListTile(
-                      leading: CircleAvatar(
-                        backgroundColor: Colors.redAccent,
-                        foregroundColor: Colors.white,
-                        child: Text(step.order.toString()),
-                      ),
-                      title: Text(step.instruction),
-                    ),
-                  ),
-                ),
-            const SizedBox(height: 32),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton.icon(
-                style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  backgroundColor: Colors.redAccent,
-                  foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-                icon: const Icon(Icons.edit, color: Colors.white),
-                label: const Text('Editar Receita'),
-                onPressed: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (_) => FormRecipeScreen(recipe: recipe),
-                    ),
-                  );
-                },
+                color: Colors.redAccent,
+                fontWeight: FontWeight.bold,
               ),
+            ),
+            ...sortedSteps.map(
+                  (step) => ListTile(
+                contentPadding: EdgeInsets.all(4),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                title: Text('${step.order}. ${step.instruction}'),
+              ),
+            ),
+            Container(height: 4),
+            ElevatedButton.icon(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.redAccent,
+                foregroundColor: Colors.white,
+              ),
+              label: Text('Editar Receita'),
+              onPressed: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (_) => FormRecipeScreen(recipe: recipe),
+                  ),
+                );
+              },
             ),
           ],
         ),

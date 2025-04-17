@@ -53,8 +53,6 @@ class IngredientNotifier extends StateNotifier<List<Ingredient>> {
       },
       conflictAlgorithm: sql.ConflictAlgorithm.replace,
     );
-    print(item);
-    print("Adicionado no bd");
     state = [...state, item];
   }
 
@@ -87,7 +85,9 @@ class IngredientNotifier extends StateNotifier<List<Ingredient>> {
       for (final item in state)
         if (item.id == updated.id) updated else item,
     ];
+
   }
+
   Future<void> upsertItem(Ingredient item) async {
     final db = await _getDb();
 

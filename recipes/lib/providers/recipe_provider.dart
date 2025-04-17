@@ -4,12 +4,9 @@ import 'package:recipes/models/recipe.dart';
 import 'package:path/path.dart';
 import 'package:recipes/models/step_preparation.dart';
 import 'package:sqflite/sqflite.dart' as sql;
-
-//providers
 import 'package:recipes/providers/igredients_provider.dart';
 import 'package:recipes/providers/step_preparation_provider.dart';
 
-//Recipe notifier will be the only providers used by screens and forms
 class RecipeNotifier extends StateNotifier<List<Recipe>> {
   final Ref ref;
 
@@ -92,7 +89,6 @@ class RecipeNotifier extends StateNotifier<List<Recipe>> {
       conflictAlgorithm: sql.ConflictAlgorithm.replace,
     );
 
-    // Adicionando ingredientes e steps
     for (final ingredient in item.ingredients) {
       await ref.read(ingredientProvider.notifier).addItem(ingredient);
     }
@@ -101,35 +97,19 @@ class RecipeNotifier extends StateNotifier<List<Recipe>> {
       await ref.read(stepPreparationProvider.notifier).addItem(step);
     }
 
-    // Armazenando a receita com steps ordenados
     state = [...state, item.copyWith(steps: sortedSteps)];
   }
 
-  Future<void> removeItem(String id) async {
+  Future<void> deleteItem(String id) async {
     final db = await _getDb();
+    await db.delete('recipes', where: 'id = ?', whereArgs: [id]);
 
-    final recipeToRemove = state.firstWhere((r) => r.id == id);
-    state = state.where((r) => r.id != id).toList();
-
-    await db.delete(
-      'recipes',
-      where: 'id = ?',
-      whereArgs: [id],
-    );
-
-    for (final ingredient in recipeToRemove.ingredients) {
-      await ref.read(ingredientProvider.notifier).removeItem(ingredient.id);
-    }
-
-    for (final step in recipeToRemove.steps) {
-      await ref.read(stepPreparationProvider.notifier).removeItem(step.id);
-    }
+    state = state.where((recipe) => recipe.id != id).toList();
   }
 
   Future<void> updateItem(Recipe updatedRecipe) async {
     final db = await _getDb();
 
-    // Ordena os steps antes de salvar
     final sortedSteps = List<StepPreparation>.from(updatedRecipe.steps)
       ..sort((a, b) => a.order.compareTo(b.order));
 
