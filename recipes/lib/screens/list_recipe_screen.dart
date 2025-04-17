@@ -42,7 +42,7 @@ class ListRecipeScreen extends ConsumerWidget {
               margin: const EdgeInsets.all(4),
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: Colors.redAccent[100],
+                color: Colors.pink[50],
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Column(
@@ -52,14 +52,14 @@ class ListRecipeScreen extends ConsumerWidget {
                     recipe.name,
                     style: const TextStyle(
                       fontWeight: FontWeight.bold,
-                      color: Colors.white,
+                      color: Colors.redAccent,
                     ),
                   ),
                   Row(
                     children: [
                       Text(
                         '${recipe.ingredientCount} ingredientes | ${recipe.preparationTime.inMinutes} min',
-                        style: const TextStyle(color: Colors.white),
+                        style: TextStyle(color: Colors.red[300]),
                       ),
                     ],
                   ),

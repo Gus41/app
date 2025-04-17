@@ -18,6 +18,7 @@ class FormRecipeScreen extends ConsumerStatefulWidget {
 }
 
 class _FormRecipeScreenState extends ConsumerState<FormRecipeScreen> {
+
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _ratingController = TextEditingController();
@@ -68,11 +69,13 @@ class _FormRecipeScreenState extends ConsumerState<FormRecipeScreen> {
 
       if (isEditing) {
         notifier.updateItem(newRecipe);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Alterações salvas com sucesso!')),
+        );
       } else {
         notifier.addItem(newRecipe);
+        Navigator.of(context).pop();
       }
-
-      Navigator.of(context).pop();
     }
   }
 
@@ -94,7 +97,7 @@ class _FormRecipeScreenState extends ConsumerState<FormRecipeScreen> {
     if (result != null) {
       if (_steps.any((step) => step.order == result.order)) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Já existe um passo com essa ordem!')),
+          const SnackBar(content: Text('Já existe um passo com esse índex')),
         );
         return;
       }
@@ -112,151 +115,122 @@ class _FormRecipeScreenState extends ConsumerState<FormRecipeScreen> {
 
     return Scaffold(
       appBar: AppBar(
+        foregroundColor: Colors.white,
+        backgroundColor: Colors.redAccent,
         title: Text(isEditing ? 'Editar Receita' : 'Nova Receita'),
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.red,
-        elevation: 0.5,
         centerTitle: true,
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            children: [
-              TextFormField(
-                controller: _nameController,
-                decoration: const InputDecoration(
-                  labelText: 'Nome da Receita',
-                  labelStyle: TextStyle(color: Colors.red),
-                  focusedBorder: UnderlineInputBorder(
-                    borderSide: BorderSide(color: Colors.red),
-                  ),
-                ),
-                onSaved: (value) => _name = value!.trim(),
-                validator: (value) => (value == null || value.isEmpty)
-                    ? 'Informe um nome.'
-                    : null,
+      body: Form(
+        key: _formKey,
+        child: ListView(
+          padding: const EdgeInsets.all(16),
+          children: [
+            TextFormField(
+              controller: _nameController,
+              decoration: const InputDecoration(
+                labelText: 'Título',
+                labelStyle: TextStyle(color: Colors.redAccent),
               ),
-              TextFormField(
-                controller: _ratingController,
-                decoration: const InputDecoration(
-                  labelText: 'Avaliação (0-5)',
-                  labelStyle: TextStyle(color: Colors.red),
-                  focusedBorder: UnderlineInputBorder(
-                    borderSide: BorderSide(color: Colors.red),
-                  ),
-                ),
-                keyboardType:
-                const TextInputType.numberWithOptions(decimal: true),
-                onSaved: (value) =>
-                _rating = double.tryParse(value ?? '0') ?? 0,
-                validator: (value) {
-                  final rating = double.tryParse(value ?? '');
-                  if (rating == null || rating < 0 || rating > 5) {
-                    return 'Avaliação deve estar entre 0 e 5.';
+              onSaved: (value) => _name = value!.trim(),
+              validator: (value) => (value == null || value.isEmpty) ? 'Nome inválido.' : null,
+            ),
+            TextFormField(
+              controller: _ratingController,
+              decoration: const InputDecoration(
+                labelText: 'Avaliação (0-5)',
+                labelStyle: TextStyle(color: Colors.redAccent),
+              ),
+              onSaved: (value) => _rating = double.tryParse(value ?? '0') ?? 0,
+              validator: (value) {
+                final rating = double.tryParse(value ?? '');
+                if (rating == null || rating < 0 || rating > 5) {
+                  return 'Avaliação inválida.';
+                }
+                return null;
+              },
+            ),
+            TextFormField(
+              controller: _timeController,
+              decoration: const InputDecoration(
+                labelText: 'Tempo de Preparo (min)',
+                labelStyle: TextStyle(color: Colors.redAccent),
+              ),
+              onSaved: (value) => _preparationTime = Duration(minutes: int.tryParse(value ?? '0') ?? 0),
+              validator: (value) {
+                final minutes = int.tryParse(value ?? '');
+                if (minutes == null || minutes < 0) {
+                  return 'Tempo inválido.';
+                }
+                return null;
+              },
+            ),
+            const SizedBox(height: 20),
+            ElevatedButton.icon(
+              onPressed: _addIngredient,
+              label: const Text('Adicionar Ingrediente'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.redAccent,
+                foregroundColor: Colors.white,
+              ),
+            ),
+            ..._ingredients.asMap().entries.map((entry) {
+              final index = entry.key;
+              final ingredient = entry.value;
+              return ListTile(
+                title: Text(ingredient.name),
+                subtitle: Text(ingredient.quantity),
+                onTap: () async {
+                  final result = await Navigator.of(context).push<Ingredient>(
+                    MaterialPageRoute(
+                      builder: (_) => FormIngredientScreen(ingredient: ingredient),
+                    ),
+                  );
+                  if (result != null) {
+                    setState(() {
+                      _ingredients[index] = result;
+                    });
                   }
-                  return null;
                 },
+              );
+            }).toList(),
+            ElevatedButton.icon(
+              onPressed: _addStep,
+              label: const Text('Adicionar Etapa'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.redAccent,
+                foregroundColor: Colors.white,
               ),
-              TextFormField(
-                controller: _timeController,
-                decoration: const InputDecoration(
-                  labelText: 'Tempo de Preparo (min)',
-                  labelStyle: TextStyle(color: Colors.red),
-                  focusedBorder: UnderlineInputBorder(
-                    borderSide: BorderSide(color: Colors.red),
-                  ),
-                ),
-                keyboardType: TextInputType.number,
-                onSaved: (value) => _preparationTime =
-                    Duration(minutes: int.tryParse(value ?? '0') ?? 0),
-                validator: (value) {
-                  final minutes = int.tryParse(value ?? '');
-                  if (minutes == null || minutes < 0) {
-                    return 'Informe um tempo válido.';
+            ),
+            ..._steps.map((stp) {
+              return ListTile(
+                leading: Text(stp.order.toString()),
+                title: Text(stp.instruction),
+                onTap: () async {
+                  final result = await Navigator.of(context).push<StepPreparation>(
+                    MaterialPageRoute(
+                      builder: (_) => FormStepScreen(step: stp),
+                    ),
+                  );
+
+                  if (result != null) {
+                    setState(() {
+                      final index = _steps.indexOf(stp);
+                      _steps[index] = result;
+                      _steps.sort((a, b) => a.order.compareTo(b.order));
+                    });
                   }
-                  return null;
                 },
+              );
+            }).toList(),
+            ElevatedButton.icon(
+              onPressed: _saveForm,
+              label: Text('Salvar'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.redAccent,
+                foregroundColor: Colors.white,
               ),
-              const SizedBox(height: 20),
-              ElevatedButton.icon(
-                onPressed: _addIngredient,
-                icon: const Icon(Icons.add, color: Colors.white),
-                label: const Text('Adicionar Ingrediente'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.red,
-                  foregroundColor: Colors.white,
-                ),
-              ),
-              ..._ingredients.asMap().entries.map((entry) {
-                final index = entry.key;
-                final ingredient = entry.value;
-                return ListTile(
-                  title: Text(ingredient.name),
-                  subtitle: Text(ingredient.quantity),
-                  trailing: const Icon(Icons.edit, color: Colors.red),
-                  onTap: () async {
-                    final result = await Navigator.of(context).push<Ingredient>(
-                      MaterialPageRoute(
-                        builder: (_) => FormIngredientScreen(ingredient: ingredient),
-                      ),
-                    );
-
-                    if (result != null) {
-                      setState(() {
-                        _ingredients[index] = result;
-                      });
-                    }
-                  },
-                );
-              }).toList(),
-              const SizedBox(height: 20),
-              ElevatedButton.icon(
-                onPressed: _addStep,
-                icon: const Icon(Icons.add, color: Colors.white),
-                label: const Text('Adicionar Etapa'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.red,
-                  foregroundColor: Colors.white,
-                ),
-              ),
-              ..._steps.map((s) {
-                return ListTile(
-                  leading: Text('${s.order}º'),
-                  title: Text(s.instruction),
-                  trailing: const Icon(Icons.edit, color: Colors.red),
-                  onTap: () async {
-                    final result = await Navigator.of(context).push<StepPreparation>(
-                      MaterialPageRoute(
-                        builder: (_) => FormStepScreen(step: s),
-                      ),
-                    );
-
-                    if (result != null) {
-                      setState(() {
-                        final index = _steps.indexOf(s);
-                        _steps[index] = result;
-                        _steps.sort((a, b) => a.order.compareTo(b.order));
-                      });
-                    }
-                  },
-                );
-              }).toList(),
-              const SizedBox(height: 30),
-              ElevatedButton.icon(
-                onPressed: _saveForm,
-                icon: const Icon(Icons.save, color: Colors.white),
-                label: Text(isEditing ? 'Salvar Alterações' : 'Salvar Receita'),
-                style: ElevatedButton.styleFrom(
-                  minimumSize: const Size.fromHeight(50),
-                  textStyle: const TextStyle(fontSize: 18),
-                  backgroundColor: Colors.red,
-                  foregroundColor: Colors.white,
-                ),
-              ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );

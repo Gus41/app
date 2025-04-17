@@ -45,12 +45,6 @@ class _FormStepScreenState extends State<FormStepScreen> {
         title: Text(widget.step == null ? 'Adicionar Etapa' : 'Editar Etapa'),
         backgroundColor: Colors.red,
         foregroundColor: Colors.white,
-        actions: [
-          IconButton(
-            onPressed: _submitForm,
-            icon: const Icon(Icons.save)
-          ),
-        ],
       ),
       body: Padding(
         padding: const EdgeInsets.all(16),
@@ -102,6 +96,16 @@ class _FormStepScreenState extends State<FormStepScreen> {
                   return null;
                 },
                 onSaved: (value) => _instruction = value!,
+              ),
+              const SizedBox(height: 24),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.redAccent,
+                  foregroundColor: Colors.white,
+                  minimumSize: Size(double.infinity, 50), // Botão com altura maior
+                ),
+                onPressed: _submitForm,
+                child: const Text('Salvar Etapa'),
               ),
             ],
           ),

@@ -87,7 +87,10 @@ class IngredientNotifier extends StateNotifier<List<Ingredient>> {
       for (final item in state)
         if (item.id == updated.id) updated else item,
     ];
+
+    print("Lista de ingredientes atualizada: $state");
   }
+
   Future<void> upsertItem(Ingredient item) async {
     final db = await _getDb();
 

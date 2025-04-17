@@ -44,13 +44,6 @@ class _FormIngredientScreenState extends State<FormIngredientScreen> {
         title: const Text('Adicionar Ingrediente'),
         backgroundColor: Colors.red,
         foregroundColor: Colors.white,
-        actions: [
-          IconButton(
-            onPressed: _submitForm,
-            icon: const Icon(Icons.save),
-            tooltip: 'Salvar',
-          ),
-        ],
       ),
       body: Padding(
         padding: const EdgeInsets.all(16),
@@ -100,6 +93,16 @@ class _FormIngredientScreenState extends State<FormIngredientScreen> {
                   return null;
                 },
                 onSaved: (value) => _quantity = value!,
+              ),
+              const SizedBox(height: 24),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.redAccent,
+                  foregroundColor: Colors.white,
+                  minimumSize: Size(double.infinity, 50),
+                ),
+                onPressed: _submitForm,
+                child: const Text('Salvar Ingrediente'),
               ),
             ],
           ),
