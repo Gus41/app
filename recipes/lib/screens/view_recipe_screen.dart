@@ -22,6 +22,15 @@ class ViewRecipeScreen extends ConsumerWidget {
         foregroundColor: Colors.white,
         title: Text(recipe.name),
         centerTitle: true,
+        actions: [
+          IconButton(
+            icon: Icon(Icons.delete),
+            onPressed: () async {
+              await ref.read(recipeProvider.notifier).deleteItem(recipe.id);
+              Navigator.of(context).pop();
+            },
+          ),
+        ],
       ),
       body: Padding(
         padding: EdgeInsets.all(16),
@@ -61,12 +70,8 @@ class ViewRecipeScreen extends ConsumerWidget {
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
-                title: Text(
-                  ing.name,
-                ),
-                subtitle: Text(
-                  'Quantidade: ${ing.quantity}',
-                ),
+                title: Text(ing.name),
+                subtitle: Text('Quantidade: ${ing.quantity}'),
               ),
             ),
             Container(height: 4),
@@ -83,9 +88,7 @@ class ViewRecipeScreen extends ConsumerWidget {
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
-                title: Text(
-                  '${step.order}. ${step.instruction}',
-                ),
+                title: Text('${step.order}. ${step.instruction}'),
               ),
             ),
             Container(height: 4),

@@ -102,6 +102,13 @@ class RecipeNotifier extends StateNotifier<List<Recipe>> {
     state = [...state, item.copyWith(steps: sortedSteps)];
   }
 
+  Future<void> deleteItem(String id) async {
+    final db = await _getDb();
+    await db.delete('recipes', where: 'id = ?', whereArgs: [id]);
+
+    state = state.where((recipe) => recipe.id != id).toList();
+  }
+
   Future<void> updateItem(Recipe updatedRecipe) async {
     final db = await _getDb();
 
