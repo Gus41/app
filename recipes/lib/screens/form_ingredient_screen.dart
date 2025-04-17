@@ -1,49 +1,64 @@
 import 'package:flutter/material.dart';
 import 'package:recipes/models/ingredients.dart';
+import 'package:uuid/uuid.dart';
 
 class FormIngredientScreen extends StatefulWidget {
-  const FormIngredientScreen({super.key, this.ingredient});
-
   final Ingredient? ingredient;
 
+  const FormIngredientScreen({Key? key, this.ingredient}) : super(key: key);
+
   @override
-  State<FormIngredientScreen> createState() => _FormIngredientScreenState();
+  _FormIngredientScreenState createState() => _FormIngredientScreenState();
 }
 
 class _FormIngredientScreenState extends State<FormIngredientScreen> {
   final _formKey = GlobalKey<FormState>();
-  String _name = '';
-  String _quantity = '';
+  final _nameController = TextEditingController();
+  final _quantityController = TextEditingController();
 
-  void _submitForm() {
-    if (_formKey.currentState!.validate()) {
-      _formKey.currentState!.save();
-
-      final newIngredient = Ingredient(
-        name: _name,
-        quantity: _quantity,
-      );
-      Navigator.of(context).pop(newIngredient);
-    }
-  }
+  bool get isEditing => widget.ingredient != null;
 
   @override
   void initState() {
     super.initState();
-    if (widget.ingredient != null) {
-      _name = widget.ingredient!.name;
-      _quantity = widget.ingredient!.quantity;
+    if (isEditing) {
+      _nameController.text = widget.ingredient!.name;
+      _quantityController.text = widget.ingredient!.quantity;
     }
+  }
+
+  void _saveIngredient() {
+    if (_formKey.currentState!.validate()) {
+      final ingredient = Ingredient(
+        id: isEditing ? widget.ingredient!.id : const Uuid().v4(),
+        name: _nameController.text.trim(),
+        quantity: _quantityController.text.trim(),
+      );
+      Navigator.of(context).pop(ingredient);
+    }
+  }
+
+  void _deleteIngredient() {
+    Navigator.of(context).pop(null);
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
       appBar: AppBar(
-        title: const Text('Adicionar Ingrediente'),
-        backgroundColor: Colors.red,
-        foregroundColor: Colors.white,
+        title: Text(
+          isEditing ? 'Editar Ingrediente' : 'Novo Ingrediente',
+          style: const TextStyle(color: Colors.white),
+        ),
+        backgroundColor: Colors.redAccent,
+        iconTheme: const IconThemeData(color: Colors.white),
+        actions: [
+          if (isEditing)
+            IconButton(
+              icon: const Icon(Icons.delete, color: Colors.white),
+              onPressed: _deleteIngredient,
+            ),
+        ],
       ),
       body: Padding(
         padding: const EdgeInsets.all(16),
@@ -52,62 +67,35 @@ class _FormIngredientScreenState extends State<FormIngredientScreen> {
           child: Column(
             children: [
               TextFormField(
-                initialValue: _name,
-                decoration: InputDecoration(
-                  labelText: 'Nome',
-                  labelStyle: const TextStyle(color: Colors.red),
-                  focusedBorder: OutlineInputBorder(
-                    borderSide: const BorderSide(color: Colors.red),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                ),
-                validator: (value) {
-                  if (value == null || value.trim().isEmpty) {
-                    return 'Informe o nome do ingrediente.';
-                  }
-                  return null;
-                },
-                onSaved: (value) => _name = value!,
+                controller: _nameController,
+                decoration: const InputDecoration(labelText: 'Nome'),
+                validator: (value) => (value == null || value.isEmpty) ? 'Informe o nome' : null,
               ),
-              const SizedBox(height: 16),
               TextFormField(
-                initialValue: _quantity,
-                decoration: InputDecoration(
-                  labelText: 'Quantidade',
-                  labelStyle: const TextStyle(color: Colors.red),
-                  focusedBorder: OutlineInputBorder(
-                    borderSide: const BorderSide(color: Colors.red),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                ),
-                validator: (value) {
-                  if (value == null || value.trim().isEmpty) {
-                    return 'Informe a quantidade.';
-                  }
-                  return null;
-                },
-                onSaved: (value) => _quantity = value!,
+                controller: _quantityController,
+                decoration: const InputDecoration(labelText: 'Quantidade'),
+                validator: (value) => (value == null || value.isEmpty) ? 'Informe a quantidade' : null,
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: 20),
               ElevatedButton(
+                onPressed: _saveIngredient,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.redAccent,
                   foregroundColor: Colors.white,
-                  minimumSize: Size(double.infinity, 50),
                 ),
-                onPressed: _submitForm,
-                child: const Text('Salvar Ingrediente'),
+                child: const Text('Salvar'),
               ),
             ],
           ),
         ),
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _quantityController.dispose();
+    super.dispose();
   }
 }

@@ -185,11 +185,13 @@ class _FormRecipeScreenState extends ConsumerState<FormRecipeScreen> {
                       builder: (_) => FormIngredientScreen(ingredient: ingredient),
                     ),
                   );
-                  if (result != null) {
-                    setState(() {
+                  setState(() {
+                    if (result == null) {
+                      _ingredients.removeAt(index);
+                    } else {
                       _ingredients[index] = result;
-                    });
-                  }
+                    }
+                  });
                 },
               );
             }).toList(),

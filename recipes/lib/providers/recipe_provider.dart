@@ -4,8 +4,6 @@ import 'package:recipes/models/recipe.dart';
 import 'package:path/path.dart';
 import 'package:recipes/models/step_preparation.dart';
 import 'package:sqflite/sqflite.dart' as sql;
-
-//providers
 import 'package:recipes/providers/igredients_provider.dart';
 import 'package:recipes/providers/step_preparation_provider.dart';
 
