@@ -185,6 +185,7 @@ class _FormRecipeScreenState extends ConsumerState<FormRecipeScreen> {
                       builder: (_) => FormIngredientScreen(ingredient: ingredient),
                     ),
                   );
+
                   setState(() {
                     if (result == null) {
                       _ingredients.removeAt(index);
@@ -214,13 +215,15 @@ class _FormRecipeScreenState extends ConsumerState<FormRecipeScreen> {
                     ),
                   );
 
-                  if (result != null) {
-                    setState(() {
+                  setState(() {
+                    if (result == null) {
+                      _steps.remove(stp);
+                    } else {
                       final index = _steps.indexOf(stp);
                       _steps[index] = result;
                       _steps.sort((a, b) => a.order.compareTo(b.order));
-                    });
-                  }
+                    }
+                  });
                 },
               );
             }).toList(),

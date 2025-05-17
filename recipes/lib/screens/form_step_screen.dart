@@ -45,6 +45,17 @@ class _FormStepScreenState extends State<FormStepScreen> {
         title: Text(widget.step == null ? 'Adicionar Etapa' : 'Editar Etapa'),
         backgroundColor: Colors.red,
         foregroundColor: Colors.white,
+        actions: [
+          if (widget.step != null)
+            IconButton(
+              icon: const Icon(Icons.delete),
+                onPressed: () {
+                  if (Navigator.of(context).canPop()) {
+                    Navigator.of(context).pop();
+                  }
+                }
+            ),
+        ],
       ),
       body: Padding(
         padding: const EdgeInsets.all(16),
