@@ -7,6 +7,7 @@ import 'package:recipes/models/recipe.dart';
 import 'package:recipes/providers/recipe_provider.dart';
 import 'package:recipes/screens/form_ingredient_screen.dart';
 import 'package:recipes/screens/form_step_screen.dart';
+import 'package:recipes/services/api_service.dart';
 
 class FormRecipeScreen extends ConsumerStatefulWidget {
   const FormRecipeScreen({super.key, this.recipe});
@@ -18,7 +19,6 @@ class FormRecipeScreen extends ConsumerStatefulWidget {
 }
 
 class _FormRecipeScreenState extends ConsumerState<FormRecipeScreen> {
-
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _ratingController = TextEditingController();
@@ -30,6 +30,24 @@ class _FormRecipeScreenState extends ConsumerState<FormRecipeScreen> {
   String _name = '';
   double _rating = 0.0;
   Duration _preparationTime = Duration.zero;
+
+  void fillField() async {
+    final apiService = ApiService();
+
+    try {
+      final title = await apiService.getTitle();
+      final avaliation = await apiService.getAvaliation();
+      final time = await apiService.getTimePreparation();
+
+      setState(() {
+        _nameController.text = title;
+        _ratingController.text = avaliation;
+        _timeController.text = time;
+      });
+    } catch (e) {
+      print('Erro ao preencher os campos: $e');
+    }
+  }
 
   @override
   void initState() {
@@ -45,7 +63,10 @@ class _FormRecipeScreenState extends ConsumerState<FormRecipeScreen> {
       _nameController.text = _name;
       _ratingController.text = _rating.toString();
       _timeController.text = _preparationTime.inMinutes.toString();
+      return;
+      
     }
+    fillField();
   }
 
   void _saveForm() {
@@ -132,7 +153,8 @@ class _FormRecipeScreenState extends ConsumerState<FormRecipeScreen> {
                 labelStyle: TextStyle(color: Colors.redAccent),
               ),
               onSaved: (value) => _name = value!.trim(),
-              validator: (value) => (value == null || value.isEmpty) ? 'Nome inválido.' : null,
+              validator: (value) =>
+                  (value == null || value.isEmpty) ? 'Nome inválido.' : null,
             ),
             TextFormField(
               controller: _ratingController,
@@ -155,7 +177,8 @@ class _FormRecipeScreenState extends ConsumerState<FormRecipeScreen> {
                 labelText: 'Tempo de Preparo (min)',
                 labelStyle: TextStyle(color: Colors.redAccent),
               ),
-              onSaved: (value) => _preparationTime = Duration(minutes: int.tryParse(value ?? '0') ?? 0),
+              onSaved: (value) => _preparationTime =
+                  Duration(minutes: int.tryParse(value ?? '0') ?? 0),
               validator: (value) {
                 final minutes = int.tryParse(value ?? '');
                 if (minutes == null || minutes < 0) {
@@ -182,7 +205,8 @@ class _FormRecipeScreenState extends ConsumerState<FormRecipeScreen> {
                 onTap: () async {
                   final result = await Navigator.of(context).push<Ingredient>(
                     MaterialPageRoute(
-                      builder: (_) => FormIngredientScreen(ingredient: ingredient),
+                      builder: (_) =>
+                          FormIngredientScreen(ingredient: ingredient),
                     ),
                   );
 
@@ -209,7 +233,8 @@ class _FormRecipeScreenState extends ConsumerState<FormRecipeScreen> {
                 leading: Text(stp.order.toString()),
                 title: Text(stp.instruction),
                 onTap: () async {
-                  final result = await Navigator.of(context).push<StepPreparation>(
+                  final result =
+                      await Navigator.of(context).push<StepPreparation>(
                     MaterialPageRoute(
                       builder: (_) => FormStepScreen(step: stp),
                     ),

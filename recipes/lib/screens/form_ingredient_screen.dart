@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:recipes/models/ingredients.dart';
+import 'package:recipes/services/api_service.dart';
 import 'package:uuid/uuid.dart';
 
 class FormIngredientScreen extends StatefulWidget {
@@ -15,8 +16,20 @@ class _FormIngredientScreenState extends State<FormIngredientScreen> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _quantityController = TextEditingController();
-
   bool get isEditing => widget.ingredient != null;
+
+  void fillFields() async {
+    ApiService _apiService = ApiService();
+    try {
+      Ingredient ingredient = await _apiService.getIgredient();
+      setState(() {
+        _nameController.text = ingredient.name;
+        _quantityController.text = ingredient.quantity;
+      });
+    } catch (e) {
+      print('Erro ao preencher campos de ingrediente: $e');
+    }
+  }
 
   @override
   void initState() {
@@ -24,7 +37,10 @@ class _FormIngredientScreenState extends State<FormIngredientScreen> {
     if (isEditing) {
       _nameController.text = widget.ingredient!.name;
       _quantityController.text = widget.ingredient!.quantity;
+
+      return;
     }
+    fillFields();
   }
 
   void _saveIngredient() {
@@ -69,12 +85,15 @@ class _FormIngredientScreenState extends State<FormIngredientScreen> {
               TextFormField(
                 controller: _nameController,
                 decoration: const InputDecoration(labelText: 'Nome'),
-                validator: (value) => (value == null || value.isEmpty) ? 'Informe o nome' : null,
+                validator: (value) =>
+                    (value == null || value.isEmpty) ? 'Informe o nome' : null,
               ),
               TextFormField(
                 controller: _quantityController,
                 decoration: const InputDecoration(labelText: 'Quantidade'),
-                validator: (value) => (value == null || value.isEmpty) ? 'Informe a quantidade' : null,
+                validator: (value) => (value == null || value.isEmpty)
+                    ? 'Informe a quantidade'
+                    : null,
               ),
               const SizedBox(height: 20),
               ElevatedButton(

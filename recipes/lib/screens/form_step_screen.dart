@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:recipes/models/step_preparation.dart';
+import 'package:recipes/services/api_service.dart';
 
 class FormStepScreen extends StatefulWidget {
   final StepPreparation? step;
@@ -13,15 +14,35 @@ class FormStepScreen extends StatefulWidget {
 class _FormStepScreenState extends State<FormStepScreen> {
   final _formKey = GlobalKey<FormState>();
   int _order = 1;
-  String _instruction = '';
+  final TextEditingController _instructionController = TextEditingController();
+
+  void fillFields() async {
+    ApiService _apiService = ApiService();
+    try {
+      String instruction = await _apiService.getInstruction();
+      setState(() {
+        _instructionController.text = instruction;
+      });
+    } catch (e) {
+      print('Erro ao buscar instrução: $e');
+    }
+  }
 
   @override
   void initState() {
     super.initState();
     if (widget.step != null) {
       _order = widget.step!.order;
-      _instruction = widget.step!.instruction;
+      _instructionController.text = widget.step!.instruction;
+    } else {
+      fillFields();
     }
+  }
+
+  @override
+  void dispose() {
+    _instructionController.dispose();
+    super.dispose();
   }
 
   void _submitForm() {
@@ -30,7 +51,7 @@ class _FormStepScreenState extends State<FormStepScreen> {
 
       final newStep = StepPreparation(
         order: _order,
-        instruction: _instruction,
+        instruction: _instructionController.text,
       );
 
       Navigator.of(context).pop(newStep);
@@ -48,13 +69,12 @@ class _FormStepScreenState extends State<FormStepScreen> {
         actions: [
           if (widget.step != null)
             IconButton(
-              icon: const Icon(Icons.delete),
+                icon: const Icon(Icons.delete),
                 onPressed: () {
                   if (Navigator.of(context).canPop()) {
                     Navigator.of(context).pop();
                   }
-                }
-            ),
+                }),
         ],
       ),
       body: Padding(
@@ -78,7 +98,9 @@ class _FormStepScreenState extends State<FormStepScreen> {
                 keyboardType: TextInputType.number,
                 initialValue: _order.toString(),
                 validator: (value) {
-                  if (value == null || int.tryParse(value) == null || int.parse(value) < 1) {
+                  if (value == null ||
+                      int.tryParse(value) == null ||
+                      int.parse(value) < 1) {
                     return 'Informe um número válido.';
                   }
                   return null;
@@ -87,6 +109,7 @@ class _FormStepScreenState extends State<FormStepScreen> {
               ),
               const SizedBox(height: 16),
               TextFormField(
+                controller: _instructionController,
                 decoration: InputDecoration(
                   labelText: 'Instrução',
                   labelStyle: const TextStyle(color: Colors.red),
@@ -99,21 +122,20 @@ class _FormStepScreenState extends State<FormStepScreen> {
                   ),
                 ),
                 maxLines: 3,
-                initialValue: _instruction,
                 validator: (value) {
                   if (value == null || value.trim().isEmpty) {
                     return 'Informe a instrução de preparo.';
                   }
                   return null;
                 },
-                onSaved: (value) => _instruction = value!,
               ),
               const SizedBox(height: 24),
               ElevatedButton(
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.redAccent,
                   foregroundColor: Colors.white,
-                  minimumSize: Size(double.infinity, 50), // Botão com altura maior
+                  minimumSize:
+                      Size(double.infinity, 50), // Botão com altura maior
                 ),
                 onPressed: _submitForm,
                 child: const Text('Salvar Etapa'),
