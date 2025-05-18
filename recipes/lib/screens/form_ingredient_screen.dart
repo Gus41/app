@@ -37,7 +37,6 @@ class _FormIngredientScreenState extends State<FormIngredientScreen> {
     if (isEditing) {
       _nameController.text = widget.ingredient!.name;
       _quantityController.text = widget.ingredient!.quantity;
-
       return;
     }
     fillFields();
@@ -61,17 +60,24 @@ class _FormIngredientScreenState extends State<FormIngredientScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color(0xFF121212), 
       appBar: AppBar(
         title: Text(
           isEditing ? 'Editar Ingrediente' : 'Novo Ingrediente',
-          style: const TextStyle(color: Colors.white),
+          style: const TextStyle(
+            color: Color(0xFFFF1744), 
+            fontWeight: FontWeight.bold,
+          ),
         ),
-        backgroundColor: Colors.redAccent,
-        iconTheme: const IconThemeData(color: Colors.white),
+        backgroundColor: const Color(0xFF121212),
+        foregroundColor: const Color(0xFFFF1744),
+        elevation: 0,
+        centerTitle: true,
+        iconTheme: const IconThemeData(color: Color(0xFFFF1744)),
         actions: [
           if (isEditing)
             IconButton(
-              icon: const Icon(Icons.delete, color: Colors.white),
+              icon: const Icon(Icons.delete, color: Color(0xFFFF1744)),
               onPressed: _deleteIngredient,
             ),
         ],
@@ -84,23 +90,52 @@ class _FormIngredientScreenState extends State<FormIngredientScreen> {
             children: [
               TextFormField(
                 controller: _nameController,
-                decoration: const InputDecoration(labelText: 'Nome'),
+                style: const TextStyle(color: Colors.white),
+                decoration: InputDecoration(
+                  labelText: 'Nome',
+                  labelStyle: const TextStyle(color: Color(0xFFFF1744)),
+                  enabledBorder: OutlineInputBorder(
+                    borderSide: const BorderSide(color: Color(0xFFFF1744)),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderSide: const BorderSide(color: Color(0xFFFF1744), width: 2),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
                 validator: (value) =>
                     (value == null || value.isEmpty) ? 'Informe o nome' : null,
               ),
+              const SizedBox(height: 16),
               TextFormField(
                 controller: _quantityController,
-                decoration: const InputDecoration(labelText: 'Quantidade'),
-                validator: (value) => (value == null || value.isEmpty)
-                    ? 'Informe a quantidade'
-                    : null,
+                style: const TextStyle(color: Colors.white),
+                decoration: InputDecoration(
+                  labelText: 'Quantidade',
+                  labelStyle: const TextStyle(color: Color(0xFFFF1744)),
+                  enabledBorder: OutlineInputBorder(
+                    borderSide: const BorderSide(color: Color(0xFFFF1744)),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderSide: const BorderSide(color: Color(0xFFFF1744), width: 2),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+                validator: (value) =>
+                    (value == null || value.isEmpty) ? 'Informe a quantidade' : null,
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 24),
               ElevatedButton(
                 onPressed: _saveIngredient,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.redAccent,
+                  backgroundColor: const Color(0xFFFF1744),
                   foregroundColor: Colors.white,
+                  minimumSize: const Size(double.infinity, 50),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                 ),
                 child: const Text('Salvar'),
               ),

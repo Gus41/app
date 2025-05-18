@@ -61,20 +61,29 @@ class _FormStepScreenState extends State<FormStepScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: const Color(0xFF121212), // fundo preto fosco
       appBar: AppBar(
-        title: Text(widget.step == null ? 'Adicionar Etapa' : 'Editar Etapa'),
-        backgroundColor: Colors.red,
-        foregroundColor: Colors.white,
+        title: Text(
+          widget.step == null ? 'Adicionar Etapa' : 'Editar Etapa',
+          style: const TextStyle(
+            color: Color(0xFFFF1744), // vermelho vibrante
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        backgroundColor: const Color(0xFF121212),
+        foregroundColor: const Color(0xFFFF1744),
+        elevation: 0,
+        centerTitle: true,
         actions: [
           if (widget.step != null)
             IconButton(
-                icon: const Icon(Icons.delete),
-                onPressed: () {
-                  if (Navigator.of(context).canPop()) {
-                    Navigator.of(context).pop();
-                  }
-                }),
+              icon: const Icon(Icons.delete, color: Color(0xFFFF1744)),
+              onPressed: () {
+                if (Navigator.of(context).canPop()) {
+                  Navigator.of(context).pop();
+                }
+              },
+            ),
         ],
       ),
       body: Padding(
@@ -84,19 +93,21 @@ class _FormStepScreenState extends State<FormStepScreen> {
           child: Column(
             children: [
               TextFormField(
+                initialValue: _order.toString(),
+                keyboardType: TextInputType.number,
+                style: const TextStyle(color: Colors.white),
                 decoration: InputDecoration(
                   labelText: 'Ordem',
-                  labelStyle: const TextStyle(color: Colors.red),
-                  focusedBorder: OutlineInputBorder(
-                    borderSide: const BorderSide(color: Colors.red),
+                  labelStyle: const TextStyle(color: Color(0xFFFF1744)),
+                  enabledBorder: OutlineInputBorder(
+                    borderSide: const BorderSide(color: Color(0xFFFF1744)),
                     borderRadius: BorderRadius.circular(8),
                   ),
-                  border: OutlineInputBorder(
+                  focusedBorder: OutlineInputBorder(
+                    borderSide: const BorderSide(color: Color(0xFFFF1744), width: 2),
                     borderRadius: BorderRadius.circular(8),
                   ),
                 ),
-                keyboardType: TextInputType.number,
-                initialValue: _order.toString(),
                 validator: (value) {
                   if (value == null ||
                       int.tryParse(value) == null ||
@@ -110,18 +121,20 @@ class _FormStepScreenState extends State<FormStepScreen> {
               const SizedBox(height: 16),
               TextFormField(
                 controller: _instructionController,
+                maxLines: 3,
+                style: const TextStyle(color: Colors.white),
                 decoration: InputDecoration(
                   labelText: 'Instrução',
-                  labelStyle: const TextStyle(color: Colors.red),
-                  focusedBorder: OutlineInputBorder(
-                    borderSide: const BorderSide(color: Colors.red),
+                  labelStyle: const TextStyle(color: Color(0xFFFF1744)),
+                  enabledBorder: OutlineInputBorder(
+                    borderSide: const BorderSide(color: Color(0xFFFF1744)),
                     borderRadius: BorderRadius.circular(8),
                   ),
-                  border: OutlineInputBorder(
+                  focusedBorder: OutlineInputBorder(
+                    borderSide: const BorderSide(color: Color(0xFFFF1744), width: 2),
                     borderRadius: BorderRadius.circular(8),
                   ),
                 ),
-                maxLines: 3,
                 validator: (value) {
                   if (value == null || value.trim().isEmpty) {
                     return 'Informe a instrução de preparo.';
@@ -131,13 +144,16 @@ class _FormStepScreenState extends State<FormStepScreen> {
               ),
               const SizedBox(height: 24),
               ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.redAccent,
-                  foregroundColor: Colors.white,
-                  minimumSize:
-                      Size(double.infinity, 50), // Botão com altura maior
-                ),
                 onPressed: _submitForm,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFFFF1744),
+                  foregroundColor: Colors.white,
+                  minimumSize: const Size(double.infinity, 50),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                ),
                 child: const Text('Salvar Etapa'),
               ),
             ],
