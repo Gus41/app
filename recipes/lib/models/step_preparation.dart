@@ -13,15 +13,15 @@ class StepPreparation {
     required this.instruction,
   }) : id = id ?? _uuid.v4();
 
-  Map<String, dynamic> toMap() => {
+  Map<String, dynamic> toJson() => {
         'id': id,
         'order': order,
         'instruction': instruction,
       };
 
-  factory StepPreparation.fromMap(Map<String, dynamic> map) => StepPreparation(
-        id: map['id'],
-        order: map['order'],
-        instruction: map['instruction'],
+  factory StepPreparation.fromJson(Map<String, dynamic> json) => StepPreparation(
+        id: json['id'],
+        order: json['order'],
+        instruction: json['instruction'],
       );
 }

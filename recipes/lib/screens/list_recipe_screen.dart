@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:recipes/routes.dart';
 import 'package:recipes/providers/recipe_provider.dart';
+import 'package:recipes/providers/auth_provider.dart';
 
 class ListRecipeScreen extends ConsumerWidget {
   const ListRecipeScreen({super.key});
@@ -9,6 +10,9 @@ class ListRecipeScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final recipes = ref.watch(recipeProvider);
+    final recipeNotifier = ref.read(recipeProvider.notifier);
+    final authState = ref.watch(authProvider);
+    final userId = authState.user?.uid ?? '';
 
     const backgroundColor = Color(0xFF121212);
     const cardColor = Color(0xFF1E1E1E);
@@ -48,80 +52,116 @@ class ListRecipeScreen extends ConsumerWidget {
               ),
             )
           : ListView.builder(
-              padding: const EdgeInsets.all(8),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               itemCount: recipes.length,
               itemBuilder: (ctx, i) {
                 final recipe = recipes[i];
-                return GestureDetector(
-                  onTap: () {
-                    Navigator.of(context).pushNamed(
-                      AppRoutes.viewRecipe,
-                      arguments: recipe.id,
-                    );
-                  },
-                  child: Container(
-                    margin:
-                        const EdgeInsets.symmetric(vertical: 6, horizontal: 4),
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: cardColor,
-                      borderRadius: BorderRadius.circular(16),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.2),
-                          blurRadius: 6,
-                          offset: const Offset(0, 3),
-                        ),
-                      ],
-                    ),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Icon(Icons.restaurant,
-                            color: accentColor, size: 28),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
+                final isLiked = recipe.likes.contains(userId);
+
+                return Card(
+                  color: cardColor,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  margin: const EdgeInsets.symmetric(vertical: 8),
+                  elevation: 5,
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(16),
+                    onTap: () {
+                      Navigator.of(context).pushNamed(
+                        AppRoutes.viewRecipe,
+                        arguments: recipe.id,
+                      );
+                    },
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // Título e ícone
+                          Row(
                             children: [
-                              Text(
-                                recipe.name,
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  color: accentColor,
-                                  fontSize: 18,
+                              const Icon(Icons.restaurant, color: accentColor, size: 28),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Text(
+                                  recipe.name,
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color: accentColor,
+                                    fontSize: 20,
+                                  ),
                                 ),
-                              ),
-                              const SizedBox(height: 6),
-                              Row(
-                                children: [
-                                  const Icon(Icons.kitchen,
-                                      size: 16, color: Colors.grey),
-                                  const SizedBox(width: 4),
-                                  Text(
-                                    '${recipe.ingredientCount} ingredientes',
-                                    style: TextStyle(
-                                      color: Colors.grey[400],
-                                      fontSize: 14,
-                                    ),
-                                  ),
-                                  const SizedBox(width: 12),
-                                  const Icon(Icons.timer,
-                                      size: 16, color: Colors.grey),
-                                  const SizedBox(width: 4),
-                                  Text(
-                                    '${recipe.preparationTime.inMinutes} min',
-                                    style: TextStyle(
-                                      color: Colors.grey[400],
-                                      fontSize: 14,
-                                    ),
-                                  ),
-                                ],
                               ),
                             ],
                           ),
-                        ),
-                      ],
+                          const SizedBox(height: 8),
+
+                          // TEM QUE MUDAR COISA AQUI EM
+                          //TODO: ALTER THE USERNAME HERE AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+                          Text(
+                            'Por: ${recipe.userId}',
+                            style: TextStyle(
+                              fontStyle: FontStyle.italic,
+                              color: Colors.grey[400],
+                              fontSize: 14,
+                            ),
+                          ),
+
+                          const SizedBox(height: 12),
+
+                          // Informações ingredientes e tempo
+                          Row(
+                            children: [
+                              const Icon(Icons.kitchen, size: 18, color: Colors.grey),
+                              const SizedBox(width: 6),
+                              Text(
+                                '${recipe.ingredientCount} ingredientes',
+                                style: TextStyle(
+                                  color: Colors.grey[400],
+                                  fontSize: 14,
+                                ),
+                              ),
+                              const SizedBox(width: 20),
+                              const Icon(Icons.timer, size: 18, color: Colors.grey),
+                              const SizedBox(width: 6),
+                              Text(
+                                '${recipe.preparationTime.inMinutes} min',
+                                style: TextStyle(
+                                  color: Colors.grey[400],
+                                  fontSize: 14,
+                                ),
+                              ),
+                            ],
+                          ),
+
+                          const SizedBox(height: 12),
+
+                          // Linha de like
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              Text(
+                                '${recipe.likes.length}',
+                                style: TextStyle(
+                                  color: Colors.grey[400],
+                                  fontSize: 14,
+                                ),
+                              ),
+                              IconButton(
+                                icon: Icon(
+                                  isLiked ? Icons.favorite : Icons.favorite_border,
+                                  color: accentColor,
+                                ),
+                                onPressed: () {
+                                  recipeNotifier.toggleLike(recipe.id, userId);
+                                },
+                                tooltip: isLiked ? 'Descurtir' : 'Curtir',
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 );
@@ -132,11 +172,11 @@ class ListRecipeScreen extends ConsumerWidget {
           Navigator.of(context).pushNamed(AppRoutes.formRecipe);
         },
         backgroundColor: accentColor,
-        foregroundColor: Colors.white, 
+        foregroundColor: Colors.white,
         icon: const Icon(Icons.add),
         label: const Text(
           'Nova Receita',
-          style: TextStyle(color: Colors.white), 
+          style: TextStyle(color: Colors.white),
         ),
       ),
     );
