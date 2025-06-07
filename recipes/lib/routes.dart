@@ -1,6 +1,7 @@
 class AppRoutes {
 
-  static const listRecipes = '/';
+  static const loginRegister = '/';
+  static const listRecipes = '/list-recipes';
   static const viewRecipe = '/view-recipe';
   static const formRecipe = '/form-recipe';
   static const formIngredient = '/form-ingredient';

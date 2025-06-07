@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:recipes/providers/auth_provider.dart';
 import 'package:uuid/uuid.dart';
 import 'package:recipes/models/ingredients.dart';
 import 'package:recipes/models/step_preparation.dart';
@@ -74,6 +75,9 @@ class _FormRecipeScreenState extends ConsumerState<FormRecipeScreen> {
 
       final isEditing = widget.recipe != null;
       final id = isEditing ? widget.recipe!.id : const Uuid().v4();
+      final userNotifier = ref.watch(authProvider);
+      final userId = userNotifier.user!.uid;
+
 
       final newRecipe = Recipe(
         id: id,
@@ -83,6 +87,7 @@ class _FormRecipeScreenState extends ConsumerState<FormRecipeScreen> {
         preparationTime: _preparationTime,
         ingredients: _ingredients,
         steps: _steps,
+        userId: userId
       );
 
       final notifier = ref.read(recipeProvider.notifier);

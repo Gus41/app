@@ -1,11 +1,9 @@
-import 'dart:convert';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:recipes/models/recipe.dart';
-import 'package:path/path.dart';
 import 'package:recipes/models/step_preparation.dart';
-import 'package:sqflite/sqflite.dart' as sql;
-import 'package:recipes/providers/igredients_provider.dart';
-import 'package:recipes/providers/step_preparation_provider.dart';
+import 'package:recipes/models/ingredients.dart';
+import 'package:recipes/models/comment.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class RecipeNotifier extends StateNotifier<List<Recipe>> {
   final Ref ref;
@@ -14,55 +12,39 @@ class RecipeNotifier extends StateNotifier<List<Recipe>> {
     _loadItems();
   }
 
-  Future<sql.Database> _getDb() async {
-    final databasePath = await sql.getDatabasesPath();
-    return sql.openDatabase(
-      join(databasePath, 'recipes.db'),
-      onCreate: (db, version) async {
-        await db.execute('''
-          CREATE TABLE recipes (
-            id TEXT PRIMARY KEY,
-            name TEXT NOT NULL,
-            rating REAL NOT NULL,
-            dateAdded TEXT NOT NULL,
-            preparationTime INTEGER NOT NULL,
-            ingredientIds TEXT NOT NULL,
-            stepIds TEXT NOT NULL
-          )
-        ''');
-      },
-      version: 1,
-    );
-  }
+  final _recipesCollection = FirebaseFirestore.instance.collection('recipes');
 
   Future<void> _loadItems() async {
-    final db = await _getDb();
-    final data = await db.query('recipes');
+    final querySnapshot = await _recipesCollection.get();
 
-    await ref.read(ingredientProvider.notifier).loadItems();
-    await ref.read(stepPreparationProvider.notifier).loadItems();
+    final items = querySnapshot.docs.map((doc) {
+      final data = doc.data();
 
-    final ingredientList = ref.read(ingredientProvider);
-    final stepList = ref.read(stepPreparationProvider);
+      final ingredients = (data['ingredients'] as List<dynamic>)
+          .map((e) => Ingredient.fromJson(Map<String, dynamic>.from(e)))
+          .toList();
 
-    final items = data.map((row) {
-      final ingredientIds =
-          List<String>.from(jsonDecode(row['ingredientIds'] as String));
-      final stepIds = List<String>.from(jsonDecode(row['stepIds'] as String));
-      print(ingredientIds);
-      print(stepIds);
-      final ingredients =
-          ingredientList.where((i) => ingredientIds.contains(i.id)).toList();
-      final steps = stepList.where((s) => stepIds.contains(s.id)).toList();
+      final steps = (data['steps'] as List<dynamic>)
+          .map((e) => StepPreparation.fromJson(Map<String, dynamic>.from(e)))
+          .toList();
+
+      final likes = List<String>.from(data['likes'] ?? []);
+
+      final comments = (data['comments'] as List<dynamic>? ?? [])
+          .map((e) => Comment.fromJson(Map<String, dynamic>.from(e)))
+          .toList();
 
       return Recipe(
-        id: row['id'] as String,
-        name: row['name'] as String,
-        rating: row['rating'] as double,
-        dateAdded: DateTime.parse(row['dateAdded'] as String),
-        preparationTime: Duration(minutes: row['preparationTime'] as int),
+        id: data['id'],
+        userId: data['userId'],
+        name: data['name'],
+        rating: (data['rating'] as num).toDouble(),
+        dateAdded: DateTime.parse(data['dateAdded']),
+        preparationTime: Duration(minutes: data['preparationTime']),
         ingredients: ingredients,
         steps: steps,
+        likes: likes,
+        comments: comments,
       );
     }).toList();
 
@@ -70,77 +52,85 @@ class RecipeNotifier extends StateNotifier<List<Recipe>> {
   }
 
   Future<void> addItem(Recipe item) async {
-    final db = await _getDb();
-
     final sortedSteps = List<StepPreparation>.from(item.steps)
       ..sort((a, b) => a.order.compareTo(b.order));
 
-    await db.insert(
-      'recipes',
-      {
-        'id': item.id,
-        'name': item.name,
-        'rating': item.rating,
-        'dateAdded': item.dateAdded.toIso8601String(),
-        'preparationTime': item.preparationTime.inMinutes,
-        'ingredientIds': jsonEncode(item.ingredients.map((e) => e.id).toList()),
-        'stepIds': jsonEncode(sortedSteps.map((e) => e.id).toList()),
-      },
-      conflictAlgorithm: sql.ConflictAlgorithm.replace,
-    );
-
-    for (final ingredient in item.ingredients) {
-      await ref.read(ingredientProvider.notifier).addItem(ingredient);
-    }
-
-    for (final step in sortedSteps) {
-      await ref.read(stepPreparationProvider.notifier).addItem(step);
-    }
+    await _recipesCollection.doc(item.id).set({
+      'id': item.id,
+      'userId': item.userId,
+      'name': item.name,
+      'rating': item.rating,
+      'dateAdded': item.dateAdded.toIso8601String(),
+      'preparationTime': item.preparationTime.inMinutes,
+      'ingredients': item.ingredients.map((e) => e.toJson()).toList(),
+      'steps': sortedSteps.map((e) => e.toJson()).toList(),
+      'likes': item.likes,
+      'comments': item.comments.map((e) => e.toJson()).toList(),
+    });
 
     state = [...state, item.copyWith(steps: sortedSteps)];
   }
 
   Future<void> deleteItem(String id) async {
-    final db = await _getDb();
-    await db.delete('recipes', where: 'id = ?', whereArgs: [id]);
-
+    await _recipesCollection.doc(id).delete();
     state = state.where((recipe) => recipe.id != id).toList();
   }
 
   Future<void> updateItem(Recipe updatedRecipe) async {
-    final db = await _getDb();
-
     final sortedSteps = List<StepPreparation>.from(updatedRecipe.steps)
       ..sort((a, b) => a.order.compareTo(b.order));
 
-    await db.update(
-      'recipes',
-      {
-        'name': updatedRecipe.name,
-        'rating': updatedRecipe.rating,
-        'dateAdded': updatedRecipe.dateAdded.toIso8601String(),
-        'preparationTime': updatedRecipe.preparationTime.inMinutes,
-        'ingredientIds':
-            jsonEncode(updatedRecipe.ingredients.map((i) => i.id).toList()),
-        'stepIds': jsonEncode(sortedSteps.map((s) => s.id).toList()),
-      },
-      where: 'id = ?',
-      whereArgs: [updatedRecipe.id],
-    );
-
-    for (final ingredient in updatedRecipe.ingredients) {
-      await ref.read(ingredientProvider.notifier).upsertItem(ingredient);
-    }
-
-    for (final step in sortedSteps) {
-      await ref.read(stepPreparationProvider.notifier).upsertItem(step);
-    }
+    await _recipesCollection.doc(updatedRecipe.id).update({
+      'userId': updatedRecipe.userId,
+      'name': updatedRecipe.name,
+      'rating': updatedRecipe.rating,
+      'dateAdded': updatedRecipe.dateAdded.toIso8601String(),
+      'preparationTime': updatedRecipe.preparationTime.inMinutes,
+      'ingredients': updatedRecipe.ingredients.map((e) => e.toJson()).toList(),
+      'steps': sortedSteps.map((e) => e.toJson()).toList(),
+      'likes': updatedRecipe.likes,
+      'comments': updatedRecipe.comments.map((e) => e.toJson()).toList(),
+    });
 
     final updatedWithSortedSteps = updatedRecipe.copyWith(steps: sortedSteps);
 
     state = [
       for (final recipe in state)
         if (recipe.id == updatedRecipe.id) updatedWithSortedSteps else recipe,
+    ];
+  }
+
+  Future<void> toggleLike(String recipeId, String userId) async {
+    final recipe = state.firstWhere((r) => r.id == recipeId);
+
+    final updatedLikes = recipe.likes.contains(userId)
+        ? recipe.likes.where((id) => id != userId).toList()
+        : [...recipe.likes, userId];
+
+    final updatedRecipe = recipe.copyWith(likes: updatedLikes);
+
+    await _recipesCollection.doc(recipeId).update({
+      'likes': updatedLikes,
+    });
+
+    state = [
+      for (final r in state) if (r.id == recipeId) updatedRecipe else r,
+    ];
+  }
+
+  Future<void> addComment(String recipeId, Comment comment) async {
+    final recipe = state.firstWhere((r) => r.id == recipeId);
+
+    final updatedComments = [...recipe.comments, comment];
+
+    final updatedRecipe = recipe.copyWith(comments: updatedComments);
+
+    await _recipesCollection.doc(recipeId).update({
+      'comments': updatedComments.map((c) => c.toJson()).toList(),
+    });
+
+    state = [
+      for (final r in state) if (r.id == recipeId) updatedRecipe else r,
     ];
   }
 }
