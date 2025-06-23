@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:recipes/models/comment.dart';
+import 'package:recipes/models/recipe.dart';
 import 'package:recipes/models/step_preparation.dart';
 import 'package:recipes/screens/form_recipe_screen.dart';
 import 'package:recipes/providers/recipe_provider.dart';
@@ -14,7 +15,23 @@ class ViewRecipeScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final recipeId = ModalRoute.of(context)!.settings.arguments as String;
     final recipes = ref.watch(recipeProvider);
-    final recipe = recipes.firstWhere((r) => r.id == recipeId);
+    Recipe? recipe;
+    try {
+      recipe = recipes.firstWhere((r) => r.id == recipeId);
+    } catch (e) {
+      recipe = null;
+    }
+
+    if (recipe == null) {
+      return Scaffold(
+        body: const Center(
+          child: Text(
+            'Receita não encontrada',
+            style: TextStyle(color: Colors.white),
+          ),
+        ),
+      );
+    }
 
     final authState = ref.watch(authProvider);
     final userId = authState.user?.uid ?? '';
@@ -54,7 +71,7 @@ class ViewRecipeScreen extends ConsumerWidget {
             IconButton(
               icon: const Icon(Icons.delete_outline),
               onPressed: () async {
-                await ref.read(recipeProvider.notifier).deleteItem(recipe.id);
+                await ref.read(recipeProvider.notifier).deleteItem(recipe!.id);
                 Navigator.of(context).pop();
               },
             ),

@@ -62,4 +62,42 @@ class Recipe {
       comments: comments ?? this.comments,
     );
   }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'userId': userId,
+      'name': name,
+      'rating': rating,
+      'dateAdded': dateAdded.toIso8601String(),
+      'preparationTime': preparationTime.inMinutes,
+      'ingredients': ingredients.map((i) => i.toJson()).toList(),
+      'steps': steps.map((s) => s.toJson()).toList(),
+      'likes': likes,
+      'comments': comments.map((c) => c.toJson()).toList(),
+    };
+  }
+
+  factory Recipe.fromJson(Map<String, dynamic> json) {
+    return Recipe(
+      id: json['id'],
+      userId: json['userId'],
+      name: json['name'],
+      rating: (json['rating'] as num).toDouble(),
+      dateAdded: DateTime.parse(json['dateAdded']),
+      preparationTime: Duration(minutes: json['preparationTime']),
+      ingredients: (json['ingredients'] as List)
+          .map((i) => Ingredient.fromJson(i))
+          .toList(),
+      steps: (json['steps'] as List)
+          .map((s) => StepPreparation.fromJson(s))
+          .toList(),
+      likes: List<String>.from(json['likes']),
+      comments: (json['comments'] as List)
+          .map((c) => Comment.fromJson(c))
+          .toList(),
+    );
+  }
 }
+
+
