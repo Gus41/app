@@ -4,7 +4,8 @@
   import 'package:recipes/providers/recipe_provider.dart';
   import 'package:recipes/providers/auth_provider.dart';
   import 'package:recipes/services/backup_service.dart';
-  import 'package:recipes/services/DatabaseService.dart';
+  import 'package:recipes/services/database_service.dart';
+  import 'package:recipes/services/notification_service.dart';
 
   class ListRecipeScreen extends ConsumerWidget {
     const ListRecipeScreen({super.key});
@@ -226,38 +227,70 @@
       final recipes = await provider.getAllRecipes();
 
       if (choice == 'backup_file') {
-        await BackupService.gerarBackupJson(recipes);
+        try {
+          await BackupService.gerarBackupJson(recipes);
+          await NotificationService.show(
+            title: 'Backup concluído',
+            body: 'Backup em arquivo salvo com sucesso!',
+          );
+        } catch (e) {
+          await NotificationService.show(
+            title: 'Erro no backup',
+            body: 'Ocorreu um erro ao salvar o backup no arquivo.',
+          );
+        }
 
       } else if (choice == 'backup_firestore') {
         final provider = ref.read(recipeProvider.notifier);
         await provider.initialize();
         final recipes = await provider.getAllRecipes();
-
         try {
           await BackupService.gerarBackupFirestore(recipes);
-
           print('Backup Firestore realizado com sucesso!');
+          await NotificationService.show(
+            title: 'Backup concluído',
+            body: 'Backup no Firestore salvo com sucesso!',
+          );
         } catch (e) {
-
           print('Erro no backup Firestore: $e');
+          await NotificationService.show(
+            title: 'Erro no backup',
+            body: 'Ocorreu um erro ao salvar o backup no Firestore.',
+          );
         }
 
       } else if (choice == 'restore_file') {
-
-        await provider.closeDB();
-        await BackupService.restaurarComIsolate();
-        await provider.initialize();
-        await provider.reload();
-
-        print('Receitas após reload: ${provider.state.length}');
-        for (var r in provider.state) {
-          print('Receita: ${r.name}');
+        try {
+          await provider.closeDB();
+          await BackupService.restaurarComIsolate();
+          await provider.initialize();
+          await provider.reload();
+          await NotificationService.show(
+            title: 'Restauração concluída',
+            body: 'Restauração do arquivo realizada com sucesso!',
+          );
+        } catch (e) {
+          await NotificationService.show(
+            title: 'Erro na restauração',
+            body: 'Ocorreu um erro ao restaurar do arquivo.',
+          );
         }
 
       } else if (choice == 'restore_firestore') {
-        final restored = await BackupService.restoreDataFirestore();
-        await DatabaseService().replaceAllRecipes(provider.db, restored);
-        await provider.reload();
+        try {
+          final restored = await BackupService.restoreDataFirestore();
+          await DatabaseService().replaceAllRecipes(provider.db, restored);
+          await provider.reload();
+          await NotificationService.show(
+            title: 'Restauração concluída',
+            body: 'Restauração do Firestore realizada com sucesso!',
+          );
+        } catch (e) {
+          await NotificationService.show(
+            title: 'Erro na restauração',
+            body: 'Ocorreu um erro ao restaurar do Firestore.',
+          );
+        }
       }
     }
   }

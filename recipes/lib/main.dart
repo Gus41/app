@@ -9,10 +9,12 @@ import 'screens/form_ingredient_screen.dart';
 import 'screens/form_recipe_screen.dart';
 import 'screens/form_step_screen.dart';
 import 'package:recipes/providers/auth_provider.dart';
+import 'package:recipes/services/notification_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
+  await NotificationService.init();
 
   /*await FirebaseFirestore.instance
     .collection('test')

@@ -1,7 +1,7 @@
   import 'dart:convert';
   import 'dart:io';
   import 'package:path_provider/path_provider.dart';
-  import 'package:recipes/services/DatabaseService.dart';
+  import 'package:recipes/services/database_service.dart';
   import 'package:recipes/models/recipe.dart';
   import 'package:cloud_firestore/cloud_firestore.dart';
   import 'dart:isolate';
@@ -133,5 +133,3 @@
 
     _ParseParams(this.sendPort, this.filePath);
     }
-
-

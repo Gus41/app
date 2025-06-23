@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:recipes/models/recipe.dart';
-import 'package:recipes/services/DatabaseService.dart';
+import 'package:recipes/services/database_service.dart';
 import 'package:recipes/models/comment.dart';
 import 'package:sqflite/sqflite.dart';
 
