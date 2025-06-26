@@ -5,8 +5,9 @@ import 'package:recipes/models/recipe.dart';
 import 'package:recipes/models/step_preparation.dart';
 import 'package:recipes/screens/form_recipe_screen.dart';
 import 'package:recipes/providers/recipe_provider.dart';
-import 'package:recipes/providers/auth_provider.dart';  
+import 'package:recipes/providers/auth_provider.dart';
 import 'package:recipes/widgets/chatModal.dart';
+import 'package:local_auth/local_auth.dart';
 
 class ViewRecipeScreen extends ConsumerWidget {
   const ViewRecipeScreen({super.key});
@@ -20,6 +21,27 @@ class ViewRecipeScreen extends ConsumerWidget {
       recipe = recipes.firstWhere((r) => r.id == recipeId);
     } catch (e) {
       recipe = null;
+    }
+
+    Future<bool> _authenticateUser() async {
+      final auth = LocalAuthentication();
+      final canCheck =
+          await auth.canCheckBiometrics || await auth.isDeviceSupported();
+
+      if (!canCheck) return false;
+
+      try {
+        return await auth.authenticate(
+          localizedReason: 'Confirme sua identidade para deletar a receita',
+          options: const AuthenticationOptions(
+            stickyAuth: true,
+            biometricOnly: false,
+          ),
+        );
+      } catch (e) {
+        debugPrint('Erro ao autenticar: $e');
+        return false;
+      }
     }
 
     if (recipe == null) {
@@ -67,12 +89,29 @@ class ViewRecipeScreen extends ConsumerWidget {
         title: Text(recipe.name),
         centerTitle: true,
         actions: [
-          if (isOwner) 
+          if (isOwner)
             IconButton(
               icon: const Icon(Icons.delete_outline),
               onPressed: () async {
-                await ref.read(recipeProvider.notifier).deleteItem(recipe!.id);
-                Navigator.of(context).pop();
+                final confirmed = await _authenticateUser();
+                if (confirmed) {
+                  await ref
+                      .read(recipeProvider.notifier)
+                      .deleteItem(recipe!.id);
+                  if (context.mounted) {
+                    Navigator.of(context).pop();
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                          content: Text('Receita deletada com sucesso')),
+                    );
+                  }
+                } else {
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Autenticação cancelada')),
+                    );
+                  }
+                }
               },
             ),
         ],
@@ -161,8 +200,8 @@ class ViewRecipeScreen extends ConsumerWidget {
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: ListTile(
-                  leading:
-                      const Icon(Icons.format_list_numbered, color: Colors.white70),
+                  leading: const Icon(Icons.format_list_numbered,
+                      color: Colors.white70),
                   title: Text(
                     '${step.order}. ${step.instruction}',
                     style: const TextStyle(color: Colors.white),
@@ -279,7 +318,8 @@ class ViewRecipeScreen extends ConsumerWidget {
                     const SizedBox(height: 6),
                     Text(
                       _formatTimestamp(comment.timestamp),
-                      style: const TextStyle(color: Colors.white38, fontSize: 12),
+                      style:
+                          const TextStyle(color: Colors.white38, fontSize: 12),
                     ),
                   ],
                 ),
