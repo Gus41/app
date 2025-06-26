@@ -8,16 +8,18 @@ import 'package:recipes/screens/view_recipe_screen.dart';
 import 'screens/form_ingredient_screen.dart';
 import 'screens/form_recipe_screen.dart';
 import 'screens/form_step_screen.dart';
-import 'package:recipes/providers/auth_provider.dart';  
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:recipes/providers/auth_provider.dart';
+import 'package:recipes/services/notification_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
-  await FirebaseFirestore.instance
+  await NotificationService.init();
+
+  /*await FirebaseFirestore.instance
     .collection('test')
     .doc('abc123')
-    .set({'test': 'value'});
+    .set({'test': 'value'});*/
 
   runApp(const ProviderScope(child: App()));
 }
